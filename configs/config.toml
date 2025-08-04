@@ -1,0 +1,12 @@
+# Model Configurations
+[models]
+[[models.llms]]
+name = "gpt-3.5-turbo"
+provider = "proxy/openai"
+api_key = "your-openai-api-key"
+# Optional: To use GPT-4, change the name to "gpt-4" or "gpt-4-turbo"
+
+[[models.embeddings]]
+name = "text-embedding-ada-002"
+provider = "proxy/openai"
+api_key = "your-openai-api-key"
