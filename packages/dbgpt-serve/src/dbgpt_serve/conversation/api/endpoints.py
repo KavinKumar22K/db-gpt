@@ -229,9 +229,21 @@ async def list_latest_conv(
     response_model=Result[List[MessageVo]],
     dependencies=[Depends(check_api_key)],
 )
-async def get_history_messages(con_uid: str, service: Service = Depends(get_service)):
-    """Get the history messages of a conversation"""
-    return Result.succ(service.get_history_messages(ServeRequest(conv_uid=con_uid)))
+async def get_history_messages(
+    con_uid: str, 
+    user_name: Optional[str] = None,
+    service: Service = Depends(get_service)
+):
+    """Get the history messages of a conversation
+    
+    Args:
+        con_uid (str): The conversation UID
+        user_name (str, optional): The username to filter by. If provided, ensures the conversation
+                                 belongs to this user.
+    """
+    return Result.succ(service.get_history_messages(
+        ServeRequest(conv_uid=con_uid, user_name=user_name)
+    ))
 
 
 @router.get(

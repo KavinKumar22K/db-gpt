@@ -105,66 +105,6 @@ class ChatHistoryDao(BaseDao):
         session.close()
         return result
 
-    def list_user_conversations(
-        self, user_name: str, limit: int = 50, offset: int = 0
-    ):
-        """Retrieve user's chat conversations with pagination."""
-        session = self.get_raw_session()
-        try:
-            chat_history = (
-                session.query(ChatHistoryEntity)
-                .filter(ChatHistoryEntity.user_name == user_name)
-                .order_by(ChatHistoryEntity.id.desc())
-                .limit(limit)
-                .offset(offset)
-                .all()
-            )
-            return chat_history
-        finally:
-            session.close()
-
-    def get_user_conversation_count(self, user_name: str) -> int:
-        """Get total count of user's conversations."""
-        session = self.get_raw_session()
-        try:
-            count = (
-                session.query(ChatHistoryEntity)
-                .filter(ChatHistoryEntity.user_name == user_name)
-                .count()
-            )
-            return count
-        finally:
-            session.close()
-
-    def delete_user_conversation(self, user_name: str, conv_uid: str) -> bool:
-        """Delete a specific conversation for a user."""
-        session = self.get_raw_session()
-        try:
-            # Verify the conversation belongs to the user
-            conversation = (
-                session.query(ChatHistoryEntity)
-                .filter(
-                    ChatHistoryEntity.conv_uid == conv_uid,
-                    ChatHistoryEntity.user_name == user_name
-                )
-                .first()
-            )
-            
-            if conversation:
-                session.delete(conversation)
-                # Also delete associated messages
-                session.query(ChatHistoryMessageEntity).filter(
-                    ChatHistoryMessageEntity.conv_uid == conv_uid
-                ).delete()
-                session.commit()
-                return True
-            return False
-        except Exception:
-            session.rollback()
-            raise
-        finally:
-            session.close()
-
     def raw_update(self, entity: ChatHistoryEntity):
         """Update the chat history record."""
         session = self.get_raw_session()

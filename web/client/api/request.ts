@@ -113,8 +113,12 @@ export const postChatModeParamsList = (chatMode: string) => {
 export const postChatModeParamsInfoList = (chatMode: string) => {
   return POST<null, Record<string, string>>(`/api/v1/chat/mode/params/info?chat_mode=${chatMode}`);
 };
-export const getChatHistory = (convId: string) => {
-  return GET<null, ChatHistoryResponse>(`/api/v1/chat/dialogue/messages/history?con_uid=${convId}`);
+export const getChatHistory = (convId: string, user_name?: string) => {
+  let url = `/api/v1/chat/dialogue/messages/history?con_uid=${convId}`;
+  if (user_name) {
+    url += `&user_name=${encodeURIComponent(user_name)}`;
+  }
+  return GET<null, ChatHistoryResponse>(url);
 };
 export const postChatModeParamsFileLoad = ({
   convUid,

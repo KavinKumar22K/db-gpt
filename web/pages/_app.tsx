@@ -62,49 +62,23 @@ function LayoutWrapper({ children }: { children: React.ReactNode }) {
   // 登录检测
   const handleAuth = async () => {
     setIsLogin(false);
-    
-    // Check if we're on the login page
-    if (router.pathname === '/login') {
+    // 如果已有登录信息，直接展示首页
+    if (localStorage.getItem(STORAGE_USERINFO_KEY)) {
       setIsLogin(true);
       return;
     }
 
-    // Check for existing session
-    const userInfo = localStorage.getItem(STORAGE_USERINFO_KEY);
-    const validTime = localStorage.getItem(STORAGE_USERINFO_VALID_TIME_KEY);
-    
-    if (userInfo && validTime) {
-      const now = Date.now();
-      const stored = parseInt(validTime);
-      // Check if session is still valid (30 days)
-      if (now - stored < 30 * 24 * 60 * 60 * 1000) {
-        setIsLogin(true);
-        return;
-      }
+    // MOCK User info
+    const user = {
+      user_channel: `dbgpts`,
+      user_no: `002`,
+      nick_name: `dbgpts`,
+    };
+    if (user) {
+      localStorage.setItem(STORAGE_USERINFO_KEY, JSON.stringify(user));
+      localStorage.setItem(STORAGE_USERINFO_VALID_TIME_KEY, Date.now().toString());
+      setIsLogin(true);
     }
-
-    // Try to authenticate with session cookie
-    try {
-      const response = await fetch('/api/v1/auth/me', {
-        credentials: 'include',
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.data?.user) {
-          const user = result.data.user;
-          localStorage.setItem(STORAGE_USERINFO_KEY, JSON.stringify(user));
-          localStorage.setItem(STORAGE_USERINFO_VALID_TIME_KEY, Date.now().toString());
-          setIsLogin(true);
-          return;
-        }
-      }
-    } catch (error) {
-      console.log('Auth check failed:', error);
-    }
-
-    // Redirect to login if not authenticated
-    router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
   };
 
   useEffect(() => {

@@ -17,7 +17,6 @@ def scan_serve_configs():
 
     modules = [
         "dbgpt_serve.agent.chat",
-        "dbgpt_serve.auth",
         "dbgpt_serve.conversation",
         "dbgpt_serve.datasource",
         "dbgpt_serve.dbgpts.hub",

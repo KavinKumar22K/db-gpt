@@ -40,63 +40,6 @@ class ConnectorManager(BaseComponent):
         """Init component."""
         self.system_app = system_app
 
-    def _check_user_database_access(self, user_name: str, db_name: str) -> bool:
-        """Check if user has access to database."""
-        try:
-            from dbgpt_serve.auth.service.service import AuthService
-            
-            auth_service = self.system_app.get_component("dbgpt_serve_auth", AuthService)
-            if auth_service:
-                # Get user by username
-                user = auth_service._user_dao.get_by_username(user_name)
-                if user:
-                    return auth_service.can_access_database(user, db_name)
-            
-            # If auth service not available or user not found, allow access for backward compatibility
-            logger.warning(f"Auth service not available or user {user_name} not found, allowing database access")
-            return True
-            
-        except Exception as e:
-            logger.warning(f"Error checking database access for user {user_name}: {e}")
-            # Allow access if there's an error for backward compatibility
-            return True
-
-    def get_user_accessible_databases(self, user_name: str) -> List[str]:
-        """Get list of databases accessible by user."""
-        try:
-            from dbgpt_serve.auth.service.service import AuthService
-            
-            auth_service = self.system_app.get_component("dbgpt_serve_auth", AuthService)
-            if auth_service:
-                user = auth_service._user_dao.get_by_username(user_name)
-                if user:
-                    if user.is_superuser:
-                        # Superuser has access to all databases
-                        return self.get_all_database_names()
-                    else:
-                        # Get user-specific database access
-                        accessible_dbs = []
-                        all_dbs = self.get_all_database_names()
-                        for db_name in all_dbs:
-                            if auth_service.can_access_database(user, db_name):
-                                accessible_dbs.append(db_name)
-                        return accessible_dbs
-            
-            # If auth service not available, return all databases for backward compatibility
-            return self.get_all_database_names()
-            
-        except Exception as e:
-            logger.warning(f"Error getting accessible databases for user {user_name}: {e}")
-            return self.get_all_database_names()
-
-    def get_all_database_names(self) -> List[str]:
-        """Get all database names."""
-        try:
-            return self.storage.get_all_db_names()
-        except Exception as e:
-            logger.error(f"Error getting all database names: {e}")
-            return []
-
     def on_init(self):
         """Execute on init.
 
@@ -225,19 +168,12 @@ class ConnectorManager(BaseComponent):
             raise ValueError("Unsupported Db Type！" + db_type)
         return result
 
-    def get_connector(self, db_name: str, user_name: Optional[str] = None):
-        """Create a new connection instance with user access control.
+    def get_connector(self, db_name: str):
+        """Create a new connection instance.
 
         Args:
             db_name (str): database name
-            user_name (str, optional): user name for access control
         """
-        # Check user access if auth service is available
-        if user_name:
-            has_access = self._check_user_database_access(user_name, db_name)
-            if not has_access:
-                raise PermissionError(f"User {user_name} does not have access to database {db_name}")
-
         db_config = self.storage.get_db_config(db_name)
         db_type = DBType.of_db_type(db_config.get("db_type"))
         if not db_type:

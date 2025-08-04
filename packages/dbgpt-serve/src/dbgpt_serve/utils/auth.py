@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 
-from fastapi import Depends, Header
+from fastapi import Header
 
 from dbgpt._private.pydantic import BaseModel
 
@@ -23,24 +23,8 @@ class UserRequest(BaseModel):
 
 
 def get_user_from_headers(user_id: Optional[str] = Header(None)):
-    """Legacy auth function for backward compatibility."""
     try:
-        # Try to get auth middleware from global state
-        from dbgpt.component import ComponentType
-        from dbgpt.configs.model_config import CFG
-        
-        system_app = getattr(CFG, 'SYSTEM_APP', None)
-        if system_app:
-            try:
-                # Try to use new auth system
-                from dbgpt_serve.auth.middleware import create_auth_middleware
-                middleware = create_auth_middleware(system_app)
-                # This is a simplified fallback - in practice you'd need to handle async
-                pass
-            except Exception:
-                pass
-        
-        # Fallback to mock User Info
+        # Mock User Info
         if user_id:
             return UserRequest(
                 user_id=user_id, role="admin", nick_name=user_id, real_name=user_id
@@ -52,22 +36,3 @@ def get_user_from_headers(user_id: Optional[str] = Header(None)):
     except Exception as e:
         logging.exception("Authentication failed!")
         raise Exception(f"Authentication failed. {str(e)}")
-
-
-# New auth function that integrates with the auth service
-def get_authenticated_user():
-    """Get authenticated user using the new auth system."""
-    try:
-        from dbgpt.configs.model_config import CFG
-        from dbgpt_serve.auth.middleware import create_auth_middleware
-        
-        system_app = getattr(CFG, 'SYSTEM_APP', None)
-        if system_app:
-            middleware = create_auth_middleware(system_app)
-            return middleware["get_authenticated_user"]
-        else:
-            # Fallback to legacy auth
-            return get_user_from_headers
-    except Exception as e:
-        logger.warning(f"Failed to get auth middleware: {e}")
-        return get_user_from_headers

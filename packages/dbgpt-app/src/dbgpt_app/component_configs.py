@@ -7,9 +7,6 @@ from dbgpt.util.executor_utils import DefaultExecutorFactory
 from dbgpt_app.config import ApplicationConfig, ServiceWebParameters
 from dbgpt_serve.rag.storage_manager import StorageManager
 
-# Import auth service
-from dbgpt_serve.auth.serve import Serve as AuthServe
-
 logger = logging.getLogger(__name__)
 
 
@@ -62,8 +59,6 @@ def initialize_components(
     _initialize_code_server(system_app)
     # Initialize prompt templates - MUST be after serve apps registration
     _initialize_prompt_templates()
-
-
 
 
 def _initialize_model_cache(system_app: SystemApp, web_config: ServiceWebParameters):

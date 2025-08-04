@@ -67,15 +67,6 @@ class ConnectConfigDao(BaseDao):
         session.close()
         return result
 
-    def get_all_db_names(self) -> List[str]:
-        """Get all database names."""
-        session = self.get_raw_session()
-        try:
-            results = session.query(ConnectConfigEntity.db_name).all()
-            return [result[0] for result in results]
-        finally:
-            session.close()
-
     def add_url_db(
         self,
         db_name,

@@ -55,29 +55,9 @@ function SideBar() {
   const { t, i18n } = useTranslation();
   const [logo, setLogo] = useState<string>('/logo_zh_latest.png');
 
-  const { hasAdmin, hasConstruct, userInfo } = useMemo(() => {
-    try {
-      const userInfoStr = localStorage.getItem(STORAGE_USERINFO_KEY);
-      if (!userInfoStr) {
-        return { hasAdmin: false, hasConstruct: false, userInfo: null };
-      }
-      
-      const userInfo = JSON.parse(userInfoStr);
-      
-      // Check if user has admin or construct permissions
-      const hasAdmin = userInfo.is_superuser || 
-        (userInfo.permissions && userInfo.permissions.admin) ||
-        adminList.some(admin => admin.user_id === userInfo.user_id);
-      
-      const hasConstruct = userInfo.is_superuser || 
-        (userInfo.permissions && userInfo.permissions.construct) ||
-        hasAdmin;
-      
-      return { hasAdmin, hasConstruct, userInfo };
-    } catch (error) {
-      console.error('Error parsing user info:', error);
-      return { hasAdmin: false, hasConstruct: false, userInfo: null };
-    }
+  const hasAdmin = useMemo(() => {
+    const { user_id } = JSON.parse(localStorage.getItem(STORAGE_USERINFO_KEY) || '{}');
+    return adminList.some(admin => admin.user_id === user_id);
   }, [adminList]);
 
   // TODO: unused function
@@ -298,7 +278,7 @@ function SideBar() {
         ),
         path: '/',
       },
-      ...(hasConstruct ? [{
+      {
         key: 'construct',
         name: t('construct'),
         isActive: pathname.startsWith('/construct'),
@@ -312,7 +292,7 @@ function SideBar() {
           />
         ),
         path: '/construct/app',
-      }] : []),
+      },
     ];
     if (hasAdmin) {
       items.push({

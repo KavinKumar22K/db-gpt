@@ -9,6 +9,7 @@ import ChatSider from '@/new-components/chat/sider/ChatSider';
 import { IApp } from '@/types/app';
 import { ChartData, ChatHistoryResponse, IChatDialogueSchema, UserChatContent } from '@/types/chat';
 import { getInitMessage, transformFileUrl } from '@/utils';
+import { STORAGE_USERINFO_KEY } from '@/utils/constants/storage';
 import { useAsyncEffect, useRequest } from 'ahooks';
 import { Flex, Layout, Spin } from 'antd';
 import dynamic from 'next/dynamic';
@@ -172,22 +173,39 @@ const Chat: React.FC = () => {
     }
   }, [chatId, currentDialogInfo, isChatDefault, queryAppInfo, scene]);
 
+  // 获取当前用户信息
+  const getUserName = () => {
+    try {
+      const userInfo = JSON.parse(localStorage.getItem(STORAGE_USERINFO_KEY) || '{}');
+      return userInfo?.name || userInfo?.user_name || '';
+    } catch (e) {
+      console.error('Failed to get user info:', e);
+      return '';
+    }
+  };
+
   // 获取会话历史记录
   const {
     run: getHistory,
     loading: historyLoading,
     refresh: refreshHistory,
-  } = useRequest(async () => await apiInterceptors(getChatHistory(chatId)), {
-    manual: true,
-    onSuccess: data => {
-      const [, res] = data;
-      const viewList = res?.filter(item => item.role === 'view');
-      if (viewList && viewList.length > 0) {
-        order.current = viewList[viewList.length - 1].order + 1;
-      }
-      setHistory(res || []);
+  } = useRequest(
+    async () => {
+      const userName = getUserName();
+      return await apiInterceptors(getChatHistory(chatId, userName));
     },
-  });
+    {
+      manual: true,
+      onSuccess: data => {
+        const [, res] = data;
+        const viewList = res?.filter(item => item.role === 'view');
+        if (viewList && viewList.length > 0) {
+          order.current = viewList[viewList.length - 1].order + 1;
+        }
+        setHistory(res || []);
+      },
+    },
+  );
 
   // 会话提问
   const handleChat = useCallback(

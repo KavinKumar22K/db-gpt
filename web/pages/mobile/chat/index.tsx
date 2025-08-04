@@ -4,7 +4,8 @@ import useUser from '@/hooks/use-user';
 import { IApp } from '@/types/app';
 import { ChatHistoryResponse } from '@/types/chat';
 import { getUserId } from '@/utils';
-import { HEADER_USER_ID_KEY } from '@/utils/constants/index';
+import { HEADER_USER_ID_KEY } from '@/utils/constants/header';
+import { STORAGE_USERINFO_KEY } from '@/utils/constants/storage';
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source';
 import { useRequest } from 'ahooks';
 import { Spin } from 'antd';
@@ -97,9 +98,23 @@ const MobileChat: React.FC = () => {
   // 会话id
   const conv_uid = useMemo(() => `${userInfo?.user_no}_${appCode}`, [appCode, userInfo]);
 
+  // 获取当前用户名称
+  const getUserName = () => {
+    try {
+      const userInfo = JSON.parse(localStorage.getItem(STORAGE_USERINFO_KEY) || '{}');
+      return userInfo?.name || userInfo?.user_name || '';
+    } catch (e) {
+      console.error('Failed to get user info:', e);
+      return '';
+    }
+  };
+
   // 获取历史会话记录
   const { run: getChatHistoryRun, loading: historyLoading } = useRequest(
-    async () => await apiInterceptors(getChatHistory(`${userInfo?.user_no}_${appCode}`)),
+    async () => {
+      const userName = getUserName();
+      return await apiInterceptors(getChatHistory(`${userInfo?.user_no}_${appCode}`, userName));
+    },
     {
       manual: true,
       onSuccess: data => {
