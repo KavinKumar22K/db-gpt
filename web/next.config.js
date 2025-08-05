@@ -37,10 +37,10 @@ const nextConfig = {
           ],
         })
       );
-      // 添加 monaco-editor-webpack-plugin 插件
+      // Add to monaco-editor-webpack-plugin Plugin
       config.plugins.push(
         new MonacoWebpackPlugin({
-          // 你可以在这里配置插件的选项，例如：
+          // You can configure plugin options here，For example：
           languages: ["sql"],
           filename: "static/[name].worker.js",
         })

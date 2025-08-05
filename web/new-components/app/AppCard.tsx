@@ -22,7 +22,7 @@ const AppCard: React.FC<{ data: IApp }> = ({ data }) => {
       onClick={async () => {
         const [, res] = await apiInterceptors(newDialogue({ chat_mode: 'chat_agent' }));
         if (res) {
-          // 原生应用跳转
+          // Native application jump
           if (data.team_mode === 'native_app') {
             const { chat_scene = '' } = data.team_context;
             router.push(`/chat?scene=${chat_scene}&id=${res.conv_uid}${model ? `&model=${model}` : ''}`);

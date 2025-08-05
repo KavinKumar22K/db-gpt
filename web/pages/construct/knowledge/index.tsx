@@ -65,7 +65,7 @@ const Knowledge = () => {
         chat_mode: 'chat_knowledge',
       }),
     );
-    // 知识库对话都默认私有知识库应用下
+    // Knowledge Base Dialogue All are used by default in private knowledge base application
     if (data?.conv_uid) {
       setCurrentDialogInfo?.({
         chat_scene: data.chat_mode,

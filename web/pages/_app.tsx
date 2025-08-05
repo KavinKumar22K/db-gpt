@@ -57,10 +57,10 @@ function LayoutWrapper({ children }: { children: React.ReactNode }) {
 
   const router = useRouter();
 
-  // 登录检测
+  // Login detection
   const handleAuth = async () => {
     setIsLogin(false);
-    // 如果已有登录信息，直接展示首页
+    // If you already have login information，Show home page directly
     // if (localStorage.getItem(STORAGE_USERINFO_KEY)) {
     //   setIsLogin(true);
     //   return;

@@ -23,13 +23,13 @@ const ChatContainer = dynamic(() => import('@/components/chat/chat-container'), 
 const { Content } = Layout;
 
 interface ChatContentProps {
-  history: ChatHistoryResponse; // 会话记录列表
-  replyLoading: boolean; // 对话回复loading
-  scrollRef: React.RefObject<HTMLDivElement>; // 会话内容可滚动dom
-  canAbort: boolean; // 是否能中断回复
+  history: ChatHistoryResponse; // Session record list
+  replyLoading: boolean; // Conversation Replyloading
+  scrollRef: React.RefObject<HTMLDivElement>; // The session content can be scrolleddom
+  canAbort: boolean; // Can reply be interrupted
   chartsData: ChartData[];
   agent: string;
-  currentDialogue: IChatDialogueSchema; // 当前选择的会话
+  currentDialogue: IChatDialogueSchema; // The currently selected session
   appInfo: IApp;
   temperatureValue: any;
   maxNewTokensValue: any;
@@ -43,7 +43,7 @@ interface ChatContentProps {
   setAgent: React.Dispatch<React.SetStateAction<string>>;
   setCanAbort: React.Dispatch<React.SetStateAction<boolean>>;
   setReplyLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  handleChat: (content: UserChatContent, data?: Record<string, any>) => Promise<void>; // 处理会话请求逻辑函数
+  handleChat: (content: UserChatContent, data?: Record<string, any>) => Promise<void>; // Processing session request logic functions
   refreshDialogList: () => void;
   refreshHistory: () => void;
   refreshAppInfo: () => void;
@@ -120,20 +120,20 @@ const Chat: React.FC = () => {
   }, [appInfo, dbName, knowledgeId, model]);
 
   useEffect(() => {
-    // 仅初始化执行，防止dashboard页面无法切换状态
+    // Initialize execution only，preventdashboardThe page cannot switch status
     setIsMenuExpand(scene !== 'chat_dashboard');
-    // 路由变了要取消Editor模式，再进来是默认的Preview模式
+    // The route changes to cancelEditormodel，Come in again, it's the defaultPreviewmodel
     if (chatId && scene) {
       setIsContract(false);
     }
   }, [chatId, scene, setIsContract, setIsMenuExpand]);
 
-  // 是否是默认小助手
+  // Is it the default assistant?
   const isChatDefault = useMemo(() => {
     return !chatId && !scene;
   }, [chatId, scene]);
 
-  // 获取会话列表
+  // Get the session list
   const {
     data: dialogueList = [],
     refresh: refreshDialogList,
@@ -142,7 +142,7 @@ const Chat: React.FC = () => {
     return await apiInterceptors(getDialogueList());
   });
 
-  // 获取应用详情
+  // Get application details
   const { run: queryAppInfo, refresh: refreshAppInfo } = useRequest(
     async () =>
       await apiInterceptors(
@@ -159,7 +159,7 @@ const Chat: React.FC = () => {
     },
   );
 
-  // 列表当前活跃对话
+  // List of currently active conversations
   const currentDialogue = useMemo(() => {
     const [, list] = dialogueList;
     return list?.find(item => item.conv_uid === chatId) || ({} as IChatDialogueSchema);
@@ -172,7 +172,7 @@ const Chat: React.FC = () => {
     }
   }, [chatId, currentDialogInfo, isChatDefault, queryAppInfo, scene]);
 
-  // 获取会话历史记录
+  // Get session history
   const {
     run: getHistory,
     loading: historyLoading,
@@ -189,7 +189,7 @@ const Chat: React.FC = () => {
     },
   });
 
-  // 会话提问
+  // Ask a conversation
   const handleChat = useCallback(
     (content: UserChatContent, data?: Record<string, any>) => {
       return new Promise<void>(resolve => {
@@ -324,7 +324,7 @@ const Chat: React.FC = () => {
   );
 
   useAsyncEffect(async () => {
-    // 如果是默认小助手，不获取历史记录
+    // If it is the default assistant，No history is obtained
     if (isChatDefault) {
       return;
     }

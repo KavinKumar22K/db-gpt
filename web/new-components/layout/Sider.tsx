@@ -23,7 +23,7 @@ const Sider: React.FC = () => {
   const { t, i18n } = useTranslation();
   const [collapsed, setCollapsed] = useState<boolean>(false);
 
-  // 切换主题
+  // Switch theme
   const handleToggleTheme = useCallback(() => {
     const theme = mode === 'light' ? 'dark' : 'light';
     setMode(theme);
@@ -37,7 +37,7 @@ const Sider: React.FC = () => {
     localStorage.setItem(STORAGE_LANG_KEY, 'en');
   }, [i18n]);
 
-  // 展开或收起
+  // Expand or close
   const handleToggleMenu = useCallback(() => {
     setCollapsed(!collapsed);
   }, [collapsed]);

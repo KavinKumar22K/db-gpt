@@ -16,7 +16,7 @@ type PromptSelectType = {
   value?: string;
   onChange?: (value: string) => void;
 };
-// 自定义prompt控件
+// CustomizepromptControls
 const PromptSelect: React.FC<PromptSelectType> = ({ value, onChange, promptList }) => {
   const [showPrompt, setShowPrompt] = useState<boolean>(false);
   const [curPrompt, setCurPrompt] = useState<Record<string, any>>();
@@ -87,7 +87,7 @@ const DetailsCard: React.FC<{
 
   const resourcesRef = useRef<IResource[]>([]);
 
-  // 获取模型策略参数列表
+  // Get the list of model policy parameters
   const { run, loading, data } = useRequest(
     async () => {
       const [, res] = await apiInterceptors(getAppStrategyValues('priority'));
@@ -105,14 +105,14 @@ const DetailsCard: React.FC<{
     },
   );
 
-  // 选择模型策略为priority获取参数
+  // Select the model policy aspriorityGet parameters
   useEffect(() => {
     if (strategy === 'priority') {
       run();
     }
   }, [run, strategy]);
 
-  // 数据实时返回消费组件
+  // Data is returned to consumer components in real time
   useEffect(() => {
     const rawVal = form.getFieldsValue();
     updateData({

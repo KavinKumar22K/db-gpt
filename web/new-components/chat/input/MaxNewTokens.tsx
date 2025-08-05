@@ -25,7 +25,7 @@ const MaxNewTokens: React.FC<{
     );
   }
 
-  // 处理 InputNumber 的值变化
+  // deal with InputNumber Change of value
   const handleInputChange = (value: number | null) => {
     if (value === null || isNaN(value)) {
       return;
@@ -33,7 +33,7 @@ const MaxNewTokens: React.FC<{
     setMaxNewTokensValue(value);
   };
 
-  // 处理 Slider 的值变化
+  // deal with Slider Change of value
   const handleSliderChange = (value: number) => {
     setMaxNewTokensValue(value);
   };

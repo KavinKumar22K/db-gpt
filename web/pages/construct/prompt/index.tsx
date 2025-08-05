@@ -22,7 +22,7 @@ const DeleteBtn: React.FC<{ record: IPrompt; refresh: () => void }> = ({ record,
 
   const { message } = App.useApp();
 
-  // 删除prompt
+  // deleteprompt
   const { run: deletePromptRun, loading: deleteLoading } = useRequest(
     async record => {
       await deletePrompt({
@@ -32,7 +32,7 @@ const DeleteBtn: React.FC<{ record: IPrompt; refresh: () => void }> = ({ record,
     {
       manual: true,
       onSuccess: async () => {
-        message.success('删除成功');
+        message.success('Delete successfully');
         await refresh();
       },
     },
@@ -43,7 +43,7 @@ const DeleteBtn: React.FC<{ record: IPrompt; refresh: () => void }> = ({ record,
   }
 
   return (
-    <Popconfirm title='确认删除吗？' onConfirm={async () => await deletePromptRun(record)}>
+    <Popconfirm title='confirmdeleteIs it？' onConfirm={async () => await deletePromptRun(record)}>
       <Button loading={deleteLoading}>{t('Delete')}</Button>
     </Popconfirm>
   );

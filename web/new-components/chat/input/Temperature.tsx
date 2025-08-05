@@ -12,7 +12,7 @@ const Temperature: React.FC<{ temperatureValue: any; setTemperatureValue: any }>
 
   const { t } = useTranslation();
 
-  // 左边工具栏动态可用key
+  // The toolbar on the left is dynamically availablekey
   const paramKey: string[] = useMemo(() => {
     return appInfo.param_need?.map(i => i.type) || [];
   }, [appInfo.param_need]);
@@ -27,7 +27,7 @@ const Temperature: React.FC<{ temperatureValue: any; setTemperatureValue: any }>
     );
   }
 
-  // temperature变化;
+  // temperaturechange;
   const onChange = (value: any) => {
     if (isNaN(value)) {
       return;

@@ -62,7 +62,7 @@ function Flow() {
 
   const { i18n } = useTranslation();
 
-  // 触底加载更多
+  // Bottom load more
   // const loadMoreData = useCallback(() => {
   //   const current = totalRef.current;
   //   if (!current) {
@@ -76,7 +76,7 @@ function Flow() {
   //   }
   // }, [getFlowListRun]);
 
-  // // 滚动事件
+  // // Scroll Events
   // const handleScroll = debounce((e: Event) => {
   //   const target = e.target as HTMLDivElement;
   //   if (target.scrollHeight - target.scrollTop <= target.clientHeight + 200) {

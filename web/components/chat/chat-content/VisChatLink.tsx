@@ -20,7 +20,7 @@ const VisChatLink: React.FC<VisChatLinkProps> = ({ children, msg }) => {
       type='dashed'
       size='small'
     >
-      {children || '点击分析当前异常'}
+      {children || 'Click to analyze the current exception'}
     </Button>
   );
 };

@@ -24,9 +24,9 @@ interface MobileChatProps {
   setTemperature: React.Dispatch<React.SetStateAction<number>>;
   setModel: React.Dispatch<React.SetStateAction<string>>;
   scene: string;
-  history: ChatHistoryResponse; // 会话内容
+  history: ChatHistoryResponse; // Session content
   setHistory: React.Dispatch<React.SetStateAction<ChatHistoryResponse>>;
-  scrollViewRef: React.RefObject<HTMLDivElement>; // 会话可滚动区域
+  scrollViewRef: React.RefObject<HTMLDivElement>; // Serial scrollable area
   appInfo: IApp;
   conv_uid: string;
   resourceList?: Record<string, any>[];
@@ -69,11 +69,11 @@ export const MobileChatContext = createContext<MobileChatProps>({
 });
 
 const MobileChat: React.FC = () => {
-  // 从url上获取基本参数
+  // fromurlGet basic parameters on
   const searchParams = useSearchParams();
   const chatScene = searchParams?.get('chat_scene') ?? '';
   const appCode = searchParams?.get('app_code') ?? '';
-  // 模型列表
+  // Model List
   const { modelList } = useContext(ChatContext);
 
   const [history, setHistory] = useState<ChatHistoryResponse>([]);
@@ -81,23 +81,23 @@ const MobileChat: React.FC = () => {
   const [temperature, setTemperature] = useState<number>(0.5);
   const [resource, setResource] = useState<any>(null);
   const scrollViewRef = useRef<HTMLDivElement>(null);
-  // 用户输入
+  // User input
   const [userInput, setUserInput] = useState<string>('');
-  // 回复可以终止
+  // Reply can be terminated
   const [canAbort, setCarAbort] = useState<boolean>(false);
-  // 是否可以开始新的提问，上一次回答结束或者暂停才可以开始新的提问
+  // Can you start a new question，The last answer ends or is suspended before you can start a new question
   const [canNewChat, setCanNewChat] = useState<boolean>(true);
 
   const ctrl = useRef<AbortController>();
   const order = useRef<number>(1);
 
-  // 用户信息
+  // User Information
   const userInfo = useUser();
 
-  // 会话id
+  // Sessionid
   const conv_uid = useMemo(() => `${userInfo?.user_no}_${appCode}`, [appCode, userInfo]);
 
-  // 获取历史会话记录
+  // Get historical session records
   const { run: getChatHistoryRun, loading: historyLoading } = useRequest(
     async () => await apiInterceptors(getChatHistory(`${userInfo?.user_no}_${appCode}`)),
     {
@@ -113,7 +113,7 @@ const MobileChat: React.FC = () => {
     },
   );
 
-  // 获取应用信息
+  // Get application information
   const {
     data: appInfo,
     run: getAppInfoRun,
@@ -128,7 +128,7 @@ const MobileChat: React.FC = () => {
     },
   );
 
-  // 获取可选择的资源类型列表
+  // Get a list of selectable resource types
   const {
     run,
     data,
@@ -144,7 +144,7 @@ const MobileChat: React.FC = () => {
     },
   );
 
-  // 获取会话列表
+  // GetSessionList
   const { run: getDialogueListRun, loading: dialogueListLoading } = useRequest(
     async () => {
       const [, res] = await apiInterceptors(getDialogueList());
@@ -159,36 +159,36 @@ const MobileChat: React.FC = () => {
     },
   );
 
-  // 获取应用信息
+  // Get application information
   useEffect(() => {
     if (chatScene && appCode && modelList.length) {
       getAppInfoRun({ chat_scene: chatScene, app_code: appCode });
     }
   }, [appCode, chatScene, getAppInfoRun, modelList]);
 
-  // 设置历史会话记录
+  // Setting up historical session records
   useEffect(() => {
     appCode && getChatHistoryRun();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appCode]);
 
-  // 设置默认模型
+  // Set the default model
   useEffect(() => {
     if (modelList.length > 0) {
-      // 获取应用信息中的model值
+      // Get the application informationmodelvalue
       const infoModel = appInfo?.param_need?.filter(item => item.type === 'model')?.[0]?.value;
       setModel(infoModel || modelList[0]);
     }
   }, [modelList, appInfo]);
 
-  // 设置默认温度;
+  // Set the default temperature;
   useEffect(() => {
-    // 获取应用信息中的model值
+    // Get the application informationmodelvalue
     const infoTemperature = appInfo?.param_need?.filter(item => item.type === 'temperature')?.[0]?.value;
     setTemperature(infoTemperature || 0.5);
   }, [appInfo]);
 
-  // 获取可选择资源列表
+  // Get a list of selectable resources
   useEffect(() => {
     if (chatScene && appInfo?.app_code) {
       const resourceVal = appInfo?.param_need?.filter(item => item.type === 'resource')?.[0]?.value;
@@ -198,7 +198,7 @@ const MobileChat: React.FC = () => {
     }
   }, [appInfo, chatScene, run]);
 
-  // 处理会话
+  // Handle sessions
   const handleChat = async (content?: string) => {
     setUserInput('');
     ctrl.current = new AbortController();
@@ -292,7 +292,7 @@ const MobileChat: React.FC = () => {
     }
   };
 
-  // 如果是原生应用，拉取会话列表获取资源参数
+  // If it is a native application，Pull the session list to get resource parameters
   useEffect(() => {
     if (chatScene && chatScene !== 'chat_agent') {
       getDialogueListRun();

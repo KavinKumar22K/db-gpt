@@ -258,7 +258,7 @@ function SideBar() {
     if (hasAdmin) {
       items.push({
         key: 'evaluation',
-        name: '场景评测',
+        name: 'Scene evaluation',
         icon: (
           <Image
             key='image_construct'

@@ -80,7 +80,7 @@ const ChatInputPanel: React.ForwardRefRenderFunction<any, { ctrl: AbortControlle
 
     await handleChat(newUserInput, params);
 
-    // 如果应用进来第一次对话，刷新对话列表
+    // If the application comes in for the first conversation，Refresh the conversation list
     if (submitCountRef.current === 1) {
       await refreshDialogList();
     }

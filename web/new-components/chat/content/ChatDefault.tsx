@@ -36,7 +36,7 @@ function ChatDefault() {
         ...params,
       }),
     );
-  // 获取应用列表
+  // Get the application list
   const {
     run: getAppListFn,
     loading,
@@ -86,7 +86,7 @@ function ChatDefault() {
     },
   ];
 
-  // 获取推荐问题
+  // Get recommendation questions
   const { data: helps } = useRequest(async () => {
     const [, res] = await apiInterceptors(getRecommendQuestions({ is_hot_question: 'true' }));
     return res ?? [];
