@@ -6,9 +6,9 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { useContext } from 'react';
 
-const languageMap = {
-  en: '英文',
-  zh: '中文',
+// Only English is supported
+const getLanguageLabel = (lang: string) => {
+  return lang === 'en' ? 'English' : lang;
 };
 
 const AppCard: React.FC<{ data: IApp }> = ({ data }) => {
@@ -49,7 +49,7 @@ const AppCard: React.FC<{ data: IApp }> = ({ data }) => {
             </Tooltip>
             <div>
               <Tag color='default' className='text-xs'>
-                {languageMap[data?.language]}
+                {getLanguageLabel(data?.language || 'en')}
               </Tag>
               <Tag color='default' className='text-xs'>
                 {data?.team_mode}

@@ -57,7 +57,7 @@ export interface OperatePromptParams {
   response_schema: string;
   input_variables: string;
   model: string;
-  prompt_language: 'en' | 'zh';
+  prompt_language: 'en';
   user_name: string;
 }
 

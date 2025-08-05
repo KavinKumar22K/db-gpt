@@ -10,9 +10,9 @@ export type IApp = {
    */
   app_describe: string;
   /**
-   * 语言/prompt关联
+   * 语言/prompt关联 (only 'en' is supported)
    */
-  language: 'en' | 'zh';
+  language: 'en';
   /**
    * 组织模式（AutoPlan/LayOut）
    */
@@ -124,7 +124,7 @@ export interface CreateAppParams {
   team_mode?: string;
   app_code?: string;
   details?: IDetail[];
-  language?: 'zh' | 'en';
+  language?: 'en';
   recommend_questions?: [];
   team_context?: Record<string, any>;
   param_need?: ParamNeed[];

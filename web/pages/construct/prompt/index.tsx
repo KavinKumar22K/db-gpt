@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 
 import styles from './styles.module.css';
 
-const LangMap = { zh: '中文', en: 'English' };
+const LangMap = { en: 'English' };
 
 const DeleteBtn: React.FC<{ record: IPrompt; refresh: () => void }> = ({ record, refresh }) => {
   const userInfo = useUser();

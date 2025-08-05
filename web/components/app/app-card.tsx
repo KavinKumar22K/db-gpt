@@ -29,9 +29,8 @@ export default function AppCard(props: IProps) {
 
   const { t } = useTranslation();
 
-  const languageMap = {
+  const languageMap: Record<string, string> = {
     en: t('English'),
-    zh: t('Chinese'),
   };
 
   const showDeleteConfirm = () => {

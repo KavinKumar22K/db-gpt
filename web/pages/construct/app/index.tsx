@@ -146,9 +146,9 @@ export default function AppContent() {
     }
   }, [openModal]);
 
-  const languageMap = {
-    en: t('English'),
-    zh: t('Chinese'),
+  // Only English is supported
+  const getLanguageLabel = (lang: string) => {
+    return lang === 'en' ? t('English') : lang;
   };
   const handleChat = async (app: IApp) => {
     // 原生应用跳转
@@ -394,7 +394,7 @@ export default function AppContent() {
                   }
                   Tags={
                     <div>
-                      <Tag>{languageMap[item.language]}</Tag>
+                      <Tag>{getLanguageLabel(item.language)}</Tag>
                       <Tag>{item.team_mode}</Tag>
                       <Tag>{item.published === 'true' ? t('published') : t('unpublished')}</Tag>
                     </div>

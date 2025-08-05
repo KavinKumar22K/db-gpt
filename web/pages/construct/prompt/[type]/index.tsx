@@ -58,7 +58,7 @@ const TypeOptions = [
 interface BottomFormProps {
   model: string;
   temperature: number;
-  prompt_language: 'en' | 'zh';
+  prompt_language: 'en';
 }
 
 interface TopFormProps {
@@ -500,18 +500,15 @@ const AddOrEditPrompt: React.FC = () => {
                 <Form.Item label={t('temperature')} name='temperature'>
                   <TemperatureItem />
                 </Form.Item>
-                <Form.Item label={t('language')} name='prompt_language'>
+                <Form.Item label={t('language')} name='prompt_language' initialValue='en'>
                   <Select
                     options={[
                       {
                         label: t('English'),
                         value: 'en',
                       },
-                      {
-                        label: t('Chinese'),
-                        value: 'zh',
-                      },
                     ]}
+                    disabled
                   />
                 </Form.Item>
                 <Form.Item label={t('User_input')} name='user_input'>

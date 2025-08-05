@@ -30,17 +30,11 @@ const Sider: React.FC = () => {
     localStorage.setItem(STORAGE_THEME_KEY, theme);
   }, [mode, setMode]);
 
-  // 切换语言
+  // Set language to English only
   const handleChangeLang = useCallback(() => {
-    const language = i18n.language === 'en' ? 'zh' : 'en';
-    i18n.changeLanguage(language);
-    if (language === 'zh') {
-      moment.locale('zh-cn');
-    }
-    if (language === 'en') {
-      moment.locale('en');
-    }
-    localStorage.setItem(STORAGE_LANG_KEY, language);
+    i18n.changeLanguage('en');
+    moment.locale('en');
+    localStorage.setItem(STORAGE_LANG_KEY, 'en');
   }, [i18n]);
 
   // 展开或收起
@@ -86,7 +80,7 @@ const Sider: React.FC = () => {
       ) : (
         <>
           <Link href='/' className='flex items-center justify-center p-2 pb-4'>
-            <Image src='/logo_zh_latest.png' alt='DB-GPT' width={180} height={40} />
+            <Image src='/logo.png' alt='DB-GPT' width={180} height={40} />
           </Link>
           <div></div>
           <div className='flex flex-col'>

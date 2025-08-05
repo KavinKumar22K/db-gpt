@@ -7,7 +7,7 @@ import { Popover, Tooltip } from 'antd';
 import { ItemType } from 'antd/es/menu/hooks/useItems';
 import cls from 'classnames';
 import moment from 'moment';
-import 'moment/locale/zh-cn';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -53,7 +53,6 @@ function SideBar() {
   const { isMenuExpand, setIsMenuExpand, mode, setMode, adminList } = useContext(ChatContext);
   const { pathname } = useRouter();
   const { t, i18n } = useTranslation();
-  // const [logo, setLogo] = useState<string>('/logo_zh_latest.png');
 
   const hasAdmin = useMemo(() => {
     const { user_id } = JSON.parse(localStorage.getItem(STORAGE_USERINFO_KEY) || '{}');
@@ -120,11 +119,9 @@ function SideBar() {
   }, [mode, setMode]);
 
   const handleChangeLang = useCallback(() => {
-    const language = i18n.language === 'en' ? 'zh' : 'en';
-    i18n.changeLanguage(language);
-    if (language === 'zh') moment.locale('zh-cn');
-    if (language === 'en') moment.locale('en');
-    localStorage.setItem(STORAGE_LANG_KEY, language);
+    i18n.changeLanguage('en');
+    moment.locale('en');
+    localStorage.setItem(STORAGE_LANG_KEY, 'en');
   }, [i18n]);
   const settings = useMemo(() => {
     const items: SettingItem[] = [
@@ -191,60 +188,6 @@ function SideBar() {
         defaultSelectedKeys: [mode],
         placement: 'topLeft',
       },
-      // {
-      //   key: 'language',
-      //   name: t('language'),
-      //   icon: <GlobalOutlined />,
-      //   items: [
-      //     {
-      //       key: 'en',
-      //       label: (
-      //         <div className='py-1 flex justify-between gap-8 '>
-      //           <span className='flex gap-2'>
-      //             <Image src='/icons/english.png' alt='english' width={21} height={21}></Image>
-      //             <span>English</span>
-      //           </span>
-      //           <span
-      //             className={cls({
-      //               block: i18n.language === 'en',
-      //               hidden: i18n.language !== 'en',
-      //             })}
-      //           >
-      //             ✓
-      //           </span>
-      //         </div>
-      //       ),
-      //     },
-      //     {
-      //       key: 'zh',
-      //       label: (
-      //         <div className='py-1 flex justify-between gap-8 '>
-      //           <span className='flex gap-2'>
-      //             <Image src='/icons/zh.png' alt='english' width={21} height={21}></Image>
-      //             <span>简体中文</span>
-      //           </span>
-      //           <span
-      //             className={cls({
-      //               block: i18n.language === 'zh',
-      //               hidden: i18n.language !== 'zh',
-      //             })}
-      //           >
-      //             ✓
-      //           </span>
-      //         </div>
-      //       ),
-      //     },
-      //   ],
-      //   onSelect: ({ key }: { key: string }) => {
-      //     if (i18n.language === key) return;
-      //     i18n.changeLanguage(key);
-      //     if (key === 'zh') moment.locale('zh-cn');
-      //     if (key === 'en') moment.locale('en');
-      //     localStorage.setItem(STORAGE_LANG_KEY, key);
-      //   },
-      //   onClick: handleChangeLang,
-      //   defaultSelectedKeys: [i18n.language],
-      // },
       {
         key: 'fold',
         name: t(isMenuExpand ? 'Close_Sidebar' : 'Show_Sidebar'),
@@ -424,15 +367,10 @@ function SideBar() {
   //   queryDialogueList();
   // }, [queryDialogueList]);
 
+  // Set English locale on mount
   useEffect(() => {
-    const language = i18n.language;
-    if (language === 'zh') moment.locale('zh-cn');
-    if (language === 'en') moment.locale('en');
+    moment.locale('en');
   }, []);
-
-  // useEffect(() => {
-  //   setLogo(mode === 'dark' ? '/logo_s_latest.png' : '/logo_zh_latest.png');
-  // }, [mode]);
 
   if (!isMenuExpand) {
     return (

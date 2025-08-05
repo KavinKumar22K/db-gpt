@@ -51,10 +51,7 @@ export default function AppModal(props: IProps) {
 
   const [form] = Form.useForm();
 
-  const languageOptions = [
-    { value: 'en', label: t('English') },
-    { value: 'zh', label: t('Chinese') },
-  ];
+  const languageOptions = [{ value: 'en', label: t('English') }];
 
   const onChange = (newActiveKey: string) => {
     setActiveKey(newActiveKey);
