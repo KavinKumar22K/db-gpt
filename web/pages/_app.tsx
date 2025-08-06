@@ -68,9 +68,9 @@ function LayoutWrapper({ children }: { children: React.ReactNode }) {
 
     // MOCK User info
     const user = {
-      user_channel: `test`,
-      user_no: `002`,
-      nick_name: `test`,
+      user_channel: `user`,
+      user_no: `001`,
+      nick_name: `user`,
     };
     if (user) {
       localStorage.setItem(STORAGE_USERINFO_KEY, JSON.stringify(user));
