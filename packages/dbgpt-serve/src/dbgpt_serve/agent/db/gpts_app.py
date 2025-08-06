@@ -1129,7 +1129,7 @@ class GptsAppDao(BaseDao):
                 {"type": AppParamType.Temperature.value, "value": None},
                 {"type": AppParamType.MaxNewTokens.value, "value": None},
             ],
-            user_code=user_code,
+            # user_code=user_code,
             published="true",
         )
         try:
@@ -1163,7 +1163,7 @@ class GptsAppDao(BaseDao):
                 {"type": AppParamType.Temperature.value, "value": None},
                 {"type": AppParamType.MaxNewTokens.value, "value": None},
             ],
-            user_code=user_code,
+            # user_code=user_code,
             published="true",
         )
         try:
@@ -1186,7 +1186,7 @@ class GptsAppDao(BaseDao):
                 {"type": AppParamType.Temperature.value, "value": None},
                 {"type": AppParamType.MaxNewTokens.value, "value": None},
             ],
-            user_code=user_code,
+            # user_code=user_code,
             published="true",
         )
         try:
@@ -1209,7 +1209,7 @@ class GptsAppDao(BaseDao):
                 {"type": AppParamType.Temperature.value, "value": None},
                 {"type": AppParamType.MaxNewTokens.value, "value": None},
             ],
-            user_code=user_code,
+            # user_code=user_code,
             published="true",
         )
         try:
@@ -1232,7 +1232,7 @@ class GptsAppDao(BaseDao):
                 {"type": AppParamType.MaxNewTokens.value, "value": None},
             ],
             team_context=chat_dashboard_ctx,
-            user_code=user_code,
+            # user_code=user_code,
             published="true",
         )
         try:
@@ -1258,7 +1258,7 @@ class GptsAppDao(BaseDao):
                 {"type": AppParamType.Temperature.value, "value": None},
                 {"type": AppParamType.MaxNewTokens.value, "value": None},
             ],
-            user_code=user_code,
+            # user_code=user_code,
             published="true",
         )
         try:

@@ -31,7 +31,9 @@ const ReferencesContentView: React.FC<{ references: any }> = ({ references }) =>
         key: reference.name,
         children: (
           <div className='h-full overflow-y-auto'>
-            {reference?.chunks?.map((chunk: any) => <MarkDownContext key={chunk.id}>{chunk.content}</MarkDownContext>)}
+            {reference?.chunks?.map((chunk: any) => (
+              <MarkDownContext key={chunk.id}>{chunk.content}</MarkDownContext>
+            ))}
           </div>
         ),
       };
