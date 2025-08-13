@@ -7,13 +7,35 @@ import Icon, {
   MessageOutlined,
   PartitionOutlined,
 } from '@ant-design/icons';
-import { ConfigProvider, Tabs } from 'antd';
+import { ConfigProvider, Result, Tabs, Button } from 'antd';
 import { t } from 'i18next';
 import { useRouter } from 'next/router';
 import React from 'react';
+import useUser from '@/hooks/use-user';
+import { useContext, useMemo } from 'react';
+import { ChatContext } from '@/app/chat-context';
+import { STORAGE_USERINFO_KEY } from '@/utils/constants/index';
 import './style.css';
 
 function ConstructLayout({ children }: { children: React.ReactNode }) {
+  const user = useUser() as any;
+  const { adminList } = useContext(ChatContext);
+  const hasAccess = useMemo(() => {
+    try {
+      const { user_id } = JSON.parse(localStorage.getItem(STORAGE_USERINFO_KEY) || '{}');
+      if (!user_id) return false;
+      const envAllow = (process.env.NEXT_PUBLIC_CONSTRUCT_ALLOWED_USER_IDS || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+      return (
+        adminList.some((admin: any) => admin.user_id === user_id) ||
+        envAllow.includes(user_id)
+      );
+    } catch {
+      return false;
+    }
+  }, [adminList]);
   const items = [
     {
       key: 'app',
@@ -76,6 +98,25 @@ function ConstructLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const activeKey = router.pathname.split('/')[2];
   // const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches; // unused
+
+  if (!hasAccess) {
+    return (
+      <div className='flex flex-col h-full w-full dark:bg-gradient-dark bg-gradient-light bg-cover bg-center'>
+        <ConfigProvider>
+          <Result
+            status='403'
+            title='403'
+            subTitle={'Only admins can access Construct'}
+            extra={
+              <Button type='primary' onClick={() => router.replace('/')}> 
+                {'Back Home'}
+              </Button>
+            }
+          />
+        </ConfigProvider>
+      </div>
+    );
+  }
 
   return (
     <div className='flex flex-col h-full w-full  dark:bg-gradient-dark bg-gradient-light bg-cover bg-center'>

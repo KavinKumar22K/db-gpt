@@ -59,6 +59,20 @@ function SideBar() {
     return adminList.some(admin => admin.user_id === user_id);
   }, [adminList]);
 
+  const hasConstructAccess = useMemo(() => {
+    try {
+      const { user_id } = JSON.parse(localStorage.getItem(STORAGE_USERINFO_KEY) || '{}');
+      if (!user_id) return false;
+      const envAllow = (process.env.NEXT_PUBLIC_CONSTRUCT_ALLOWED_USER_IDS || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+      return hasAdmin || envAllow.includes(user_id);
+    } catch {
+      return hasAdmin;
+    }
+  }, [hasAdmin]);
+
   // TODO: unused function
   // const routes = useMemo(() => {
   //   const items: RouteItem[] = [
@@ -239,22 +253,28 @@ function SideBar() {
         path: '/chat',
         isActive: pathname.startsWith('/chat'),
       },
-      // {
-      //   key: 'construct',
-      //   name: t('construct'),
-      //   isActive: pathname.startsWith('/construct'),
-      //   icon: (
-      //     <Image
-      //       key='image_construct'
-      //       src={pathname.startsWith('/construct') ? /datainsights-service/pictures/app_active.png' : /datainsights-service/pictures/app.png'}
-      //       alt='construct_image'
-      //       width={40}
-      //       height={40}
-      //     />
-      //   ),
-      //   path: '/construct/app',
-      // },
     ];
+    if (hasConstructAccess) {
+      items.push({
+        key: 'construct',
+        name: t('construct'),
+        isActive: pathname.startsWith('/construct'),
+        icon: (
+          <Image
+            key='image_construct'
+            src={
+              pathname.startsWith('/construct')
+                ? '/datainsights-service/pictures/app_active.png'
+                : '/datainsights-service/pictures/app.png'
+            }
+            alt='construct_image'
+            width={40}
+            height={40}
+          />
+        ),
+        path: '/construct/app',
+      });
+    }
     if (hasAdmin) {
       items.push({
         key: 'evaluation',
@@ -277,7 +297,7 @@ function SideBar() {
       });
     }
     return items;
-  }, [t, pathname, hasAdmin]);
+  }, [t, pathname, hasAdmin, hasConstructAccess]);
 
   // TODO: unused function
   // const dropDownRoutes: ItemType[] = useMemo(() => {

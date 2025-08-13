@@ -1,6 +1,7 @@
 import { apiInterceptors, postDbAdd, postDbEdit, postDbTestConnect } from '@/client/api';
 import { ConfigurableParams } from '@/types/common';
 import { DBOption, DBType } from '@/types/db';
+import { STORAGE_USERINFO_KEY } from '@/utils/constants/storage';
 import { Button, Form, Input, Select, message } from 'antd';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -53,6 +54,21 @@ function DatabaseForm({
     }
   }, [editValue, getFromRenderData, description, form]);
 
+  useEffect(() => {
+    // Initialize user_id from localStorage if available
+    try {
+      const raw = localStorage.getItem(STORAGE_USERINFO_KEY) ?? '';
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.user_id) {
+          form.setFieldValue('user_id', parsed.user_id);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, [form]);
+
   const handleTypeChange = (value: DBType) => {
     setSelectedType(value);
     form.resetFields(['params']);
@@ -75,9 +91,18 @@ function DatabaseForm({
       //   return;
       // }
 
-      const { description, type, ...values } = formValues;
+      const { description, type, user_id, ...values } = formValues;
 
-      const data = {
+      // Persist user_id to localStorage so requests include it via interceptor
+      try {
+        if (user_id) {
+          localStorage.setItem(STORAGE_USERINFO_KEY, JSON.stringify({ user_id }));
+        }
+      } catch {
+        // ignore storage errors
+      }
+
+      const data: any = {
         type: selectedType,
         params: values,
         description: description || '',
@@ -116,6 +141,10 @@ function DatabaseForm({
         type: selectedType,
       }}
     >
+      <FormItem label='User ID' name='user_id' rules={[{ required: true, message: 'Please input user id' }]}>
+        <Input placeholder='Enter user id (required)' />
+      </FormItem>
+
       <FormItem
         label={t('database_type')}
         name='type'

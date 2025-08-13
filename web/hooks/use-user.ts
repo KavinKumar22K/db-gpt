@@ -1,7 +1,13 @@
 import { STORAGE_USERINFO_KEY } from '@/utils/constants/index';
 
 const useUser = () => {
-  return JSON.parse(localStorage.getItem(STORAGE_USERINFO_KEY) ?? '');
+  try {
+    const raw = localStorage.getItem(STORAGE_USERINFO_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
 };
 
 export default useUser;
