@@ -11,6 +11,7 @@ from starlette.responses import JSONResponse, StreamingResponse
 from dbgpt.component import SystemApp
 from dbgpt.util import PaginationResult
 from dbgpt_serve.core import Result
+from dbgpt_serve.utils.auth import UserRequest, get_user_from_headers
 
 from ..config import SERVE_SERVICE_COMPONENT_NAME, ServeConfig
 from ..service.service import Service
@@ -215,10 +216,13 @@ async def list_latest_conv(
     page: Optional[int] = Query(default=1, description="current page"),
     page_size: Optional[int] = Query(default=10, description="page size"),
     service: Service = Depends(get_service),
+    user_token: UserRequest = Depends(get_user_from_headers),
 ) -> Result[List[ServerResponse]]:
     """Return latest conversations"""
+    # Always prefer authenticated user from headers
+    effective_user = user_token.user_id if user_token and user_token.user_id else None
     request = ServeRequest(
-        user_name=user_name or user_id,
+        user_name=effective_user or user_name or user_id,
         sys_code=sys_code,
     )
     return Result.succ(service.get_list_by_page(request, page, page_size).items)
@@ -229,9 +233,19 @@ async def list_latest_conv(
     response_model=Result[List[MessageVo]],
     dependencies=[Depends(check_api_key)],
 )
-async def get_history_messages(con_uid: str, service: Service = Depends(get_service)):
+async def get_history_messages(
+    con_uid: str,
+    service: Service = Depends(get_service),
+    user_token: UserRequest = Depends(get_user_from_headers),
+):
     """Get the history messages of a conversation"""
-    return Result.succ(service.get_history_messages(ServeRequest(conv_uid=con_uid)))
+    # Ensure messages are filtered by authenticated user
+    effective_user = user_token.user_id if user_token and user_token.user_id else None
+    return Result.succ(
+        service.get_history_messages(
+            ServeRequest(conv_uid=con_uid, user_name=effective_user)
+        )
+    )
 
 
 @router.get(
@@ -246,6 +260,7 @@ async def export_all_messages(
         "file", description="response format(file or json)"
     ),
     service: Service = Depends(get_service),
+    user_token: UserRequest = Depends(get_user_from_headers),
 ):
     """Export all conversations and messages for a user
 
@@ -260,8 +275,9 @@ async def export_all_messages(
         A dictionary containing all conversations and their messages
     """
     # 1. Get all conversations for the user
+    effective_user = user_token.user_id if user_token and user_token.user_id else None
     request = ServeRequest(
-        user_name=user_name or user_id,
+        user_name=effective_user or user_name or user_id,
         sys_code=sys_code,
     )
 
@@ -281,14 +297,14 @@ async def export_all_messages(
 
     # 2. For each conversation, get all messages
     result = {
-        "user_name": user_name or user_id,
+        "user_name": effective_user or user_name or user_id,
         "sys_code": sys_code,
         "total_conversations": len(all_conversations),
         "conversations": [],
     }
 
     for conv in all_conversations:
-        messages = service.get_history_messages(ServeRequest(conv_uid=conv.conv_uid))
+        messages = service.get_history_messages(ServeRequest(conv_uid=conv.conv_uid, user_name=effective_user))
         conversation_data = {
             "conv_uid": conv.conv_uid,
             "chat_mode": conv.chat_mode,
@@ -304,7 +320,7 @@ async def export_all_messages(
         return JSONResponse(content=result)
     else:
         file_name = (
-            f"conversation_export_{user_name or user_id or 'dbgpt'}_"
+            f"conversation_export_{(effective_user or user_name or user_id or 'dbgpt')}_"
             f"{sys_code or 'dbgpt'}"
         )
         # Return the json file

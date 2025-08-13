@@ -80,10 +80,10 @@ function ChatDefault() {
       value: 'recommend',
       label: t('recommend_apps'),
     },
-    {
-      value: 'used',
-      label: t('used_apps'),
-    },
+    // {
+    //   value: 'used',
+    //   label: t('used_apps'),
+    // },
   ];
 
   // Get recommendation questions

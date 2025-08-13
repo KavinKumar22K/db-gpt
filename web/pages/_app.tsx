@@ -2,7 +2,7 @@ import { ChatContext, ChatContextProvider } from '@/app/chat-context';
 import SideBar from '@/components/layout/side-bar';
 // import FloatHelper from '@/new-components/layout/FloatHelper';
 import { STORAGE_LANG_KEY, STORAGE_USERINFO_KEY, STORAGE_USERINFO_VALID_TIME_KEY } from '@/utils/constants/index';
-import { App, ConfigProvider, MappingAlgorithm, theme } from 'antd';
+import { App, Button, Card, ConfigProvider, Form, Input, MappingAlgorithm, theme } from 'antd';
 import enUS from 'antd/locale/en_US';
 import classNames from 'classnames';
 import type { AppProps } from 'next/app';
@@ -54,28 +54,29 @@ function CssWrapper({ children }: { children: React.ReactElement }) {
 function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const { isMenuExpand, mode } = useContext(ChatContext);
   const [isLogin, setIsLogin] = useState(false);
+  const [checkingLogin, setCheckingLogin] = useState(true);
 
   const router = useRouter();
 
   // Login detection
   const handleAuth = async () => {
-    setIsLogin(false);
-    // If you already have login information，Show home page directly
-    // if (localStorage.getItem(STORAGE_USERINFO_KEY)) {
-    //   setIsLogin(true);
-    //   return;
-    // }
-
-    // MOCK User info
-    const user = {
-      user_channel: `user`,
-      user_no: `001`,
-      nick_name: `user`,
-    };
-    if (user) {
-      localStorage.setItem(STORAGE_USERINFO_KEY, JSON.stringify(user));
-      localStorage.setItem(STORAGE_USERINFO_VALID_TIME_KEY, Date.now().toString());
-      setIsLogin(true);
+    setCheckingLogin(true);
+    try {
+      const raw = localStorage.getItem(STORAGE_USERINFO_KEY);
+      const vtRaw = localStorage.getItem(STORAGE_USERINFO_VALID_TIME_KEY);
+      if (raw) {
+        const info = JSON.parse(raw || '{}') as { user_id?: string };
+        const vt = vtRaw ? Number(vtRaw) : 0;
+        // 30 days validity
+        const valid = info?.user_id && vt && Date.now() - vt < 30 * 24 * 60 * 60 * 1000;
+        setIsLogin(!!valid);
+      } else {
+        setIsLogin(false);
+      }
+    } catch {
+      setIsLogin(false);
+    } finally {
+      setCheckingLogin(false);
     }
   };
 
@@ -83,9 +84,41 @@ function LayoutWrapper({ children }: { children: React.ReactNode }) {
     handleAuth();
   }, []);
 
-  if (!isLogin) {
-    return null;
-  }
+  const onFinish = (values: { user_id: string; nick_name?: string }) => {
+    const user = {
+      user_id: values.user_id?.trim(),
+      nick_name: values.nick_name?.trim() || values.user_id?.trim(),
+      user_channel: 'local',
+    };
+    localStorage.setItem(STORAGE_USERINFO_KEY, JSON.stringify(user));
+    localStorage.setItem(STORAGE_USERINFO_VALID_TIME_KEY, Date.now().toString());
+    setIsLogin(true);
+  };
+
+  const renderLogin = () => {
+    return (
+      <div className='w-screen h-screen flex items-center justify-center bg-[rgba(0,0,0,0.02)]'>
+        <Card title='Login' className='w-[360px]'>
+          <Form layout='vertical' onFinish={onFinish}>
+            <Form.Item label='User ID' name='user_id' rules={[{ required: true, message: 'Please input User ID' }]}>
+              <Input placeholder='Enter a unique user id' autoFocus />
+            </Form.Item>
+            <Form.Item label='Nickname' name='nick_name'>
+              <Input placeholder='Optional display name' />
+            </Form.Item>
+            <Form.Item>
+              <Button type='primary' htmlType='submit' block>
+                Continue
+              </Button>
+            </Form.Item>
+          </Form>
+        </Card>
+      </div>
+    );
+  };
+
+  if (checkingLogin) return null;
+  if (!isLogin) return renderLogin();
 
   const renderContent = () => {
     if (router.pathname.includes('mobile')) {
