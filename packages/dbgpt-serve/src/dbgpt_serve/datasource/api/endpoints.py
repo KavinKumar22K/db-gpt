@@ -13,6 +13,7 @@ from dbgpt_serve.datasource.api.schemas import (
 )
 from dbgpt_serve.datasource.config import SERVE_SERVICE_COMPONENT_NAME, ServeConfig
 from dbgpt_serve.datasource.service.service import Service
+from dbgpt_serve.utils.auth import UserRequest, get_user_from_headers
 
 router = APIRouter()
 
@@ -104,6 +105,7 @@ async def test_auth():
 async def create(
     request: Union[DatasourceCreateRequest, DatasourceServeRequest],
     service: Service = Depends(get_service),
+    user: UserRequest = Depends(get_user_from_headers),
 ) -> Result[DatasourceQueryResponse]:
     """Create a new Space entity
 
@@ -114,7 +116,9 @@ async def create(
     Returns:
         ServerResponse: The response
     """
-    res = await blocking_func_to_async(global_system_app, service.create, request)
+    res = await blocking_func_to_async(
+        global_system_app, service.create, request, user_id=user.user_id
+    )
     return Result.succ(res)
 
 
@@ -126,6 +130,7 @@ async def create(
 async def update(
     request: Union[DatasourceCreateRequest, DatasourceServeRequest],
     service: Service = Depends(get_service),
+    user: UserRequest = Depends(get_user_from_headers),
 ) -> Result[DatasourceQueryResponse]:
     """Update a Space entity
 
@@ -135,7 +140,9 @@ async def update(
     Returns:
         ServerResponse: The response
     """
-    res = await blocking_func_to_async(global_system_app, service.update, request)
+    res = await blocking_func_to_async(
+        global_system_app, service.update, request, user_id=user.user_id
+    )
     return Result.succ(res)
 
 
@@ -145,7 +152,9 @@ async def update(
     dependencies=[Depends(check_api_key)],
 )
 async def delete(
-    datasource_id: str, service: Service = Depends(get_service)
+    datasource_id: str,
+    service: Service = Depends(get_service),
+    user: UserRequest = Depends(get_user_from_headers),
 ) -> Result[None]:
     """Delete a Space entity
 
@@ -155,7 +164,9 @@ async def delete(
     Returns:
         ServerResponse: The response
     """
-    await blocking_func_to_async(global_system_app, service.delete, datasource_id)
+    await blocking_func_to_async(
+        global_system_app, service.delete, datasource_id, user_id=user.user_id
+    )
     return Result.succ(None)
 
 
@@ -165,7 +176,9 @@ async def delete(
     response_model=Result[DatasourceQueryResponse],
 )
 async def query(
-    datasource_id: str, service: Service = Depends(get_service)
+    datasource_id: str,
+    service: Service = Depends(get_service),
+    user: UserRequest = Depends(get_user_from_headers),
 ) -> Result[DatasourceQueryResponse]:
     """Query Space entities
 
@@ -175,7 +188,9 @@ async def query(
     Returns:
         List[ServeResponse]: The response
     """
-    res = await blocking_func_to_async(global_system_app, service.get, datasource_id)
+    res = await blocking_func_to_async(
+        global_system_app, service.get, datasource_id, user_id=user.user_id
+    )
     return Result.succ(res)
 
 
@@ -189,6 +204,7 @@ async def query_page(
         None, description="Database type, e.g. sqlite, mysql, etc."
     ),
     service: Service = Depends(get_service),
+    user: UserRequest = Depends(get_user_from_headers),
 ) -> Result[List[DatasourceQueryResponse]]:
     """Query Space entities
 
@@ -198,7 +214,7 @@ async def query_page(
         ServerResponse: The response
     """
     res = await blocking_func_to_async(
-        global_system_app, service.get_list, db_type=db_type
+        global_system_app, service.get_list, db_type=db_type, user_id=user.user_id
     )
     return Result.succ(res)
 
@@ -248,7 +264,9 @@ async def test_connection(
     response_model=Result[bool],
 )
 async def refresh_datasource(
-    datasource_id: str, service: Service = Depends(get_service)
+    datasource_id: str,
+    service: Service = Depends(get_service),
+    user: UserRequest = Depends(get_user_from_headers),
 ) -> Result[bool]:
     """Refresh a datasource by its ID
 
@@ -263,7 +281,7 @@ async def refresh_datasource(
         HTTPException: When the refresh operation fails
     """
     res = await blocking_func_to_async(
-        global_system_app, service.refresh, datasource_id
+        global_system_app, service.refresh, datasource_id, user_id=user.user_id
     )
     return Result.succ(res)
 

@@ -296,9 +296,9 @@ async def resource_params_list(
     user_token: UserRequest = Depends(get_user_from_headers),
 ):
     if resource_type == "database":
-        result = get_db_list()
+        result = get_db_list(user_token.user_id)
     elif resource_type == "knowledge":
-        result = knowledge_list()
+        result = knowledge_list(user_token.user_id)
     elif resource_type == "tool":
         result = plugins_select_info()
     else:
@@ -312,17 +312,17 @@ async def params_list(
     user_token: UserRequest = Depends(get_user_from_headers),
 ):
     if ChatScene.ChatWithDbQA.value() == chat_mode:
-        result = get_db_list()
+        result = get_db_list(user_token.user_id)
     elif ChatScene.ChatWithDbExecute.value() == chat_mode:
-        result = get_db_list()
+        result = get_db_list(user_token.user_id)
     elif ChatScene.ChatDashboard.value() == chat_mode:
-        result = get_db_list()
+        result = get_db_list(user_token.user_id)
     elif ChatScene.ChatExecution.value() == chat_mode:
         result = plugins_select_info()
     elif ChatScene.ChatKnowledge.value() == chat_mode:
-        result = knowledge_list()
+        result = knowledge_list(user_token.user_id)
     elif ChatScene.ChatKnowledge.ExtractRefineSummary.value() == chat_mode:
-        result = knowledge_list()
+        result = knowledge_list(user_token.user_id)
     else:
         return Result.succ()
     return Result.succ(result)

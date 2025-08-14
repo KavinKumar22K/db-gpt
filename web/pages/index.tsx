@@ -153,13 +153,21 @@ const Playground: NextPage = () => {
   const columnCount = 3;
 
   function isRowLoaded({ index }: Index) {
-    return !!apps.app_list[index]; // Check if the given index has been loaded
+    // index here is ROW index from InfiniteLoader
+    const startItem = index * columnCount;
+    const endItem = Math.min(startItem + columnCount, apps.total_count);
+    for (let i = startItem; i < endItem; i++) {
+      if (!apps.app_list[i]) return false;
+    }
+    return true;
   }
 
   function loadMoreRows({ startIndex, stopIndex }: IndexRange) {
+    // startIndex/stopIndex are ROW indices
     const pageSize = 12;
-    const currentPage = Math.ceil(startIndex / pageSize) + 1; // Calculate the current page count
-    console.log(startIndex, stopIndex, currentPage);
+    const startItem = startIndex * columnCount;
+    const currentPage = Math.floor(startItem / pageSize) + 1; // Calculate the current page based on item index
+    console.log('loadMoreRows rowRange=', startIndex, stopIndex, 'startItem=', startItem, 'page=', currentPage);
     // This should be an asynchronous operation to get more data from the server
     // For example，You may call API and return one Promise
     return getAppListFn('', currentPage.toString());
@@ -349,7 +357,7 @@ const Playground: NextPage = () => {
               <InfiniteLoader
                 isRowLoaded={isRowLoaded}
                 loadMoreRows={loadMoreRows}
-                rowCount={apps.total_count} // Total number of rows of data，If unknown, it can be set to a larger number
+                rowCount={Math.ceil(apps.total_count / columnCount)} // Total number of ROWS
               >
                 {({ onRowsRendered, registerChild }) => (
                   <AutoSizer>
@@ -357,19 +365,15 @@ const Playground: NextPage = () => {
                       <Grid
                         ref={registerChild}
                         onSectionRendered={({ rowStartIndex, rowStopIndex }) => {
-                          const startIndex = rowStartIndex * columnCount;
-                          const stopIndex = rowStopIndex * columnCount + (columnCount - 1);
-                          onRowsRendered({
-                            startIndex,
-                            stopIndex,
-                          });
+                          // Pass ROW indices directly to InfiniteLoader
+                          onRowsRendered({ startIndex: rowStartIndex, stopIndex: rowStopIndex });
                         }}
                         cellRenderer={cellRenderer}
                         columnWidth={width / columnCount}
                         columnCount={columnCount}
                         height={height}
                         rowHeight={200 /* Your height */}
-                        rowCount={apps.total_count}
+                        rowCount={Math.ceil(apps.total_count / columnCount)}
                         width={width}
                       />
                     )}

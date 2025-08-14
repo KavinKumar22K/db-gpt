@@ -58,11 +58,18 @@ class ConnectConfigEntity(Model):
 class ConnectConfigDao(BaseDao):
     """DB connector config dao."""
 
-    def get_by_names(self, db_name: str) -> Optional[ConnectConfigEntity]:
-        """Get db connect info by name."""
+    def get_by_names(
+        self, db_name: str, user_id: Optional[str] = None
+    ) -> Optional[ConnectConfigEntity]:
+        """Get db connect info by name.
+
+        If user_id is provided, limit the search to that user.
+        """
         session = self.get_raw_session()
         db_connect = session.query(ConnectConfigEntity)
         db_connect = db_connect.filter(ConnectConfigEntity.db_name == db_name)
+        if user_id is not None:
+            db_connect = db_connect.filter(ConnectConfigEntity.user_id == user_id)
         result = db_connect.first()
         session.close()
         return result

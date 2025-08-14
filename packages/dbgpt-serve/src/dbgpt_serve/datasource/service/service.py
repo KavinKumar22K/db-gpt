@@ -99,7 +99,9 @@ class Service(
         return StorageManager.get_instance(self._system_app)
 
     def create(
-        self, request: Union[DatasourceCreateRequest, DatasourceServeRequest]
+        self,
+        request: Union[DatasourceCreateRequest, DatasourceServeRequest],
+        user_id: Optional[str] = None,
     ) -> DatasourceQueryResponse:
         """Create a new Datasource entity
 
@@ -133,8 +135,10 @@ class Service(
                 persisted_state["ext_config"], ensure_ascii=False
             )
         persisted_state["comment"] = desc
+        if user_id is not None:
+            persisted_state["user_id"] = user_id
         db_name = persisted_state.get("db_name")
-        datasource = self._dao.get_by_names(db_name)
+        datasource = self._dao.get_by_names(db_name, user_id=user_id)
         if datasource:
             raise HTTPException(
                 status_code=400,
@@ -163,7 +167,9 @@ class Service(
         return self._to_query_response(res)
 
     def update(
-        self, request: Union[DatasourceCreateRequest, DatasourceServeRequest]
+        self,
+        request: Union[DatasourceCreateRequest, DatasourceServeRequest],
+        user_id: Optional[str] = None,
     ) -> DatasourceQueryResponse:
         """Create a new Datasource entity
 
@@ -197,10 +203,12 @@ class Service(
                 persisted_state["ext_config"], ensure_ascii=False
             )
         persisted_state["comment"] = desc
+        if user_id is not None:
+            persisted_state["user_id"] = user_id
         db_name = persisted_state.get("db_name")
         if not db_name:
             raise HTTPException(status_code=400, detail="datasource name is required")
-        datasources = self._dao.get_by_names(db_name)
+        datasources = self._dao.get_by_names(db_name, user_id=user_id)
         if datasources is None:
             raise HTTPException(
                 status_code=400,
@@ -209,7 +217,9 @@ class Service(
         res = self._dao.update({"id": datasources.id}, persisted_state)
         return self._to_query_response(res)
 
-    def get(self, datasource_id: str) -> Optional[DatasourceQueryResponse]:
+    def get(
+        self, datasource_id: str, user_id: Optional[str] = None
+    ) -> Optional[DatasourceQueryResponse]:
         """Get a Flow entity
 
         Args:
@@ -218,12 +228,17 @@ class Service(
         Returns:
             DatasourceServeResponse: The response
         """
-        res = self._dao.get_one({"id": datasource_id})
+        query = {"id": datasource_id}
+        if user_id is not None:
+            query["user_id"] = user_id
+        res = self._dao.get_one(query)
         if not res:
             return None
         return self._to_query_response(res)
 
-    def delete(self, datasource_id: str) -> Optional[DatasourceServeResponse]:
+    def delete(
+        self, datasource_id: str, user_id: Optional[str] = None
+    ) -> Optional[DatasourceServeResponse]:
         """Delete a Flow entity
 
         Args:
@@ -232,13 +247,18 @@ class Service(
         Returns:
             DatasourceServeResponse: The data after deletion
         """
-        db_config = self._dao.get_one({"id": datasource_id})
+        query = {"id": datasource_id}
+        if user_id is not None:
+            query["user_id"] = user_id
+        db_config = self._dao.get_one(query)
         if db_config:
             self._db_summary_client.delete_db_profile(db_config.db_name)
             self._dao.delete({"id": datasource_id})
         return db_config
 
-    def get_list(self, db_type: Optional[str] = None) -> List[DatasourceQueryResponse]:
+    def get_list(
+        self, db_type: Optional[str] = None, user_id: Optional[str] = None
+    ) -> List[DatasourceQueryResponse]:
         """List the Flow entities.
 
         Returns:
@@ -247,6 +267,8 @@ class Service(
         query_request = {}
         if db_type:
             query_request["db_type"] = db_type
+        if user_id is not None:
+            query_request["user_id"] = user_id
         query_list = self.dao.get_list(query_request)
         results = []
         for item in query_list:
@@ -287,7 +309,7 @@ class Service(
         """
         return self.datasource_manager.test_connection(request)
 
-    def refresh(self, datasource_id: str) -> bool:
+    def refresh(self, datasource_id: str, user_id: Optional[str] = None) -> bool:
         """Refresh the datasource.
 
         Args:
@@ -296,7 +318,10 @@ class Service(
         Returns:
             bool: The refresh result
         """
-        db_config = self._dao.get_one({"id": datasource_id})
+        query = {"id": datasource_id}
+        if user_id is not None:
+            query["user_id"] = user_id
+        db_config = self._dao.get_one(query)
         if not db_config:
             raise HTTPException(status_code=404, detail="datasource not found")
 
