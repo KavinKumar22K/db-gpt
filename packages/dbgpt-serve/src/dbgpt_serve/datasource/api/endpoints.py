@@ -164,8 +164,12 @@ async def delete(
     Returns:
         ServerResponse: The response
     """
+    # Admins can delete any datasource (ignore user filter)
     await blocking_func_to_async(
-        global_system_app, service.delete, datasource_id, user_id=user.user_id
+        global_system_app,
+        service.delete,
+        datasource_id,
+        user_id=None if user.role == "admin" else user.user_id,
     )
     return Result.succ(None)
 
@@ -188,8 +192,12 @@ async def query(
     Returns:
         List[ServeResponse]: The response
     """
+    # Admins can query any datasource
     res = await blocking_func_to_async(
-        global_system_app, service.get, datasource_id, user_id=user.user_id
+        global_system_app,
+        service.get,
+        datasource_id,
+        user_id=None if user.role == "admin" else user.user_id,
     )
     return Result.succ(res)
 
@@ -213,8 +221,12 @@ async def query_page(
     Returns:
         ServerResponse: The response
     """
+    # Admins can view all datasources
     res = await blocking_func_to_async(
-        global_system_app, service.get_list, db_type=db_type, user_id=user.user_id
+        global_system_app,
+        service.get_list,
+        db_type=db_type,
+        user_id=None if user.role == "admin" else user.user_id,
     )
     return Result.succ(res)
 
@@ -280,8 +292,12 @@ async def refresh_datasource(
     Raises:
         HTTPException: When the refresh operation fails
     """
+    # Admins can refresh any datasource
     res = await blocking_func_to_async(
-        global_system_app, service.refresh, datasource_id, user_id=user.user_id
+        global_system_app,
+        service.refresh,
+        datasource_id,
+        user_id=None if user.role == "admin" else user.user_id,
     )
     return Result.succ(res)
 

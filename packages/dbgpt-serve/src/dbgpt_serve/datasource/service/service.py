@@ -138,12 +138,6 @@ class Service(
         if user_id is not None:
             persisted_state["user_id"] = user_id
         db_name = persisted_state.get("db_name")
-        datasource = self._dao.get_by_names(db_name, user_id=user_id)
-        if datasource:
-            raise HTTPException(
-                status_code=400,
-                detail=f"datasource name:{db_name} already exists",
-            )
         try:
             db_type = DBType.of_db_type(str_db_type)
             if not db_type:
@@ -205,16 +199,29 @@ class Service(
         persisted_state["comment"] = desc
         if user_id is not None:
             persisted_state["user_id"] = user_id
-        db_name = persisted_state.get("db_name")
-        if not db_name:
-            raise HTTPException(status_code=400, detail="datasource name is required")
-        datasources = self._dao.get_by_names(db_name, user_id=user_id)
-        if datasources is None:
-            raise HTTPException(
-                status_code=400,
-                detail=f"there is no datasource name:{db_name} exists",
-            )
-        res = self._dao.update({"id": datasources.id}, persisted_state)
+        # Prefer update by id to avoid ambiguity when duplicates exist
+        target_id = persisted_state.get("id")
+        if target_id:
+            if user_id is not None:
+                # ensure record belongs to the user when not admin
+                existed = self._dao.get_one({"id": target_id, "user_id": user_id})
+            else:
+                existed = self._dao.get_one({"id": target_id})
+            if not existed:
+                raise HTTPException(status_code=400, detail="datasource not found")
+            res = self._dao.update({"id": target_id}, persisted_state)
+        else:
+            # Backward compatibility: update by name (may affect first matched if duplicates exist)
+            db_name = persisted_state.get("db_name")
+            if not db_name:
+                raise HTTPException(status_code=400, detail="datasource name is required")
+            datasources = self._dao.get_by_names(db_name, user_id=user_id)
+            if datasources is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"there is no datasource name:{db_name} exists",
+                )
+            res = self._dao.update({"id": datasources.id}, persisted_state)
         return self._to_query_response(res)
 
     def get(

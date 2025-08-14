@@ -12,7 +12,6 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
-    UniqueConstraint,
     text,
 )
 
@@ -50,7 +49,6 @@ class ConnectConfigEntity(Model):
         Text, nullable=True, comment="Extended configuration, json format"
     )
     __table_args__ = (
-        UniqueConstraint("db_name", name="uk_db"),
         Index("idx_q_db_type", "db_type"),
     )
 
