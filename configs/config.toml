@@ -1,3 +1,6 @@
+[auth]
+neuron_secret = "12345"
+
 # Model Configurations
 [models]
 [[models.llms]]

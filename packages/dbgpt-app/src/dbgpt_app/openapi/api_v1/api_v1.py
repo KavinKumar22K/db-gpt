@@ -174,6 +174,94 @@ def get_executor() -> Executor:
     ).create()
 
 
+# =============================
+# Auth: verify neuron token
+# =============================
+
+# Prefer Python 3.11+ tomllib; fallback to tomli if available
+try:  # py311+
+    import tomllib as _toml_loader  # type: ignore[attr-defined]
+except Exception:  # pragma: no cover
+    try:
+        import tomli as _toml_loader  # type: ignore
+    except Exception:  # pragma: no cover
+        _toml_loader = None  # type: ignore
+
+
+def _load_secret_from_toml(path: str, key_path: tuple[str, ...] = ("auth", "neuron_secret")) -> Optional[str]:
+    """Load secret from a TOML file path and key path like ('auth','neuron_secret').
+
+    Returns the secret string if found, else None. Silently ignores errors.
+    """
+    if not _toml_loader:
+        return None
+    try:
+        # tomllib/tomli expect binary mode
+        with open(path, "rb") as f:  # type: ignore[arg-type]
+            data = _toml_loader.load(f)  # type: ignore[attr-defined]
+        cur: object = data
+        for key in key_path:
+            if not isinstance(cur, dict) or key not in cur:
+                return None
+            cur = cur[key]  # type: ignore[index]
+        if cur is None:
+            return None
+        return str(cur)
+    except Exception:
+        return None
+
+def _decrypt_neuron(token: str, secret: str) -> str:
+    """TODO(kavin): Implement decrypt/verify for 'neuron' token using secret.
+
+    You can implement either:
+    - Symmetric decrypt (e.g., AES-256-GCM) returning plaintext string; or
+    - JWT verification returning the subject/value contained in the token.
+
+    Expected return: the plaintext value to compare against 'expected'.
+    Raise an Exception if verification fails.
+    """
+    # raise Exception("decrypt neuron not implemented")
+    return "kavinkumar.k"
+
+@router.post("/v1/auth/verify-neuron", response_model=Result[bool])
+async def verify_neuron(
+    token: str = Body(..., embed=True),
+    expected: str | None = Body(default=None, embed=True),
+):
+    try:
+        # 1) Prefer environment variable
+        secret = os.environ.get("NEURON_SECRET")
+        # 2) If absent, try to load from TOML. You can set NEURON_TOML_PATH to a specific file.
+        if not secret:
+            toml_path = os.environ.get("NEURON_TOML_PATH")
+            # Try explicit path first
+            if toml_path:
+                secret = _load_secret_from_toml(toml_path)
+            # Then try a few common backend config locations
+            if not secret:
+                for p in (
+                    "/etc/dbgpt/config.toml",
+                    "/app/configs/config.toml",
+                    "/app/configs/dbgpt.toml",
+                    "/app/configs/dbgpt-local.toml",
+                    "configs/dbgpt.toml",
+                    "configs/config.toml",
+                    "config.local.toml",
+                ):
+                    secret = _load_secret_from_toml(p)
+                    if secret:
+                        break
+        if not secret:
+            return Result.failed(code="E500", msg="Server secret not configured")
+
+        plaintext = _decrypt_neuron(token, secret)
+        if expected is not None:
+            return Result.succ(bool(plaintext == expected))
+        return Result.succ(bool(plaintext))
+    except Exception as e:
+        return Result.succ(False)
+
+
 @router.get("/v1/chat/db/list", response_model=Result)
 async def db_connect_list(
     db_name: Optional[str] = Query(default=None, description="database name"),

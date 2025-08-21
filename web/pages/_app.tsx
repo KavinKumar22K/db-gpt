@@ -9,6 +9,7 @@ import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
+import { POST, apiInterceptors } from '@/client/api';
 import { useTranslation } from 'react-i18next';
 import '../app/i18n';
 import '../nprogress.css';
@@ -69,7 +70,35 @@ function LayoutWrapper({ children }: { children: React.ReactNode }) {
         const vt = vtRaw ? Number(vtRaw) : 0;
         // 30 days validity
         const valid = info?.user_id && vt && Date.now() - vt < 30 * 24 * 60 * 60 * 1000;
-        setIsLogin(!!valid);
+
+        // Extra check: validate localStorage 'neuron' with backend secret
+        if (valid) {
+          const neuron = localStorage.getItem('neuron');
+          if (!neuron) {
+            // missing token => not logged in
+            setIsLogin(false);
+          } else {
+            try {
+              // Use shared Axios client so requests go to the FastAPI baseURL
+              const [, valid] = await apiInterceptors(POST('/api/v1/auth/verify-neuron', {
+                token: neuron,
+                expected: info.user_id,
+              }));
+              if (valid) {
+                setIsLogin(true);
+              } else {
+                // localStorage.removeItem(STORAGE_USERINFO_KEY);
+                // localStorage.removeItem(STORAGE_USERINFO_VALID_TIME_KEY);
+                // localStorage.removeItem('neuron');
+                setIsLogin(false);
+              }
+            } catch {
+              setIsLogin(false);
+            }
+          }
+        } else {
+          setIsLogin(false);
+        }
       } else {
         setIsLogin(false);
       }
@@ -84,7 +113,7 @@ function LayoutWrapper({ children }: { children: React.ReactNode }) {
     handleAuth();
   }, []);
 
-  const onFinish = (values: { user_id: string; nick_name?: string }) => {
+  const onFinish = async (values: { user_id: string; nick_name?: string }) => {
     const user = {
       user_id: values.user_id?.trim(),
       nick_name: values.nick_name?.trim() || values.user_id?.trim(),
@@ -92,7 +121,8 @@ function LayoutWrapper({ children }: { children: React.ReactNode }) {
     };
     localStorage.setItem(STORAGE_USERINFO_KEY, JSON.stringify(user));
     localStorage.setItem(STORAGE_USERINFO_VALID_TIME_KEY, Date.now().toString());
-    setIsLogin(true);
+    // Require neuron validation before granting access
+    await handleAuth();
   };
 
   const renderLogin = () => {
