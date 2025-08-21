@@ -47,7 +47,7 @@ const Playground: NextPage = () => {
   const getAppListWithParams = (params: Record<string, string>) =>
     apiInterceptors(
       getAppList({
-        page_no: '1',
+        page: '1',
         page_size: '12',
         ...params,
       }),
@@ -74,7 +74,7 @@ const Playground: NextPage = () => {
             ignore_user: 'true',
             published: 'true',
             need_owner_info: 'true',
-            ...{ app_name, page_no, page_size },
+            ...{ app_name, page: page_no, page_size },
           });
         case 'all':
           return await getAppListWithParams({
@@ -82,7 +82,7 @@ const Playground: NextPage = () => {
             published: 'true',
             need_owner_info: 'true',
 
-            ...{ app_name, page_no, page_size },
+            ...{ app_name, page: page_no, page_size },
           });
         default:
           return [];
@@ -100,26 +100,27 @@ const Playground: NextPage = () => {
             });
           }
         } else {
-          if ('app_list' in data) {
-            const code = data?.app_list?.[0]?.app_code;
-            const index = code ? apps.app_list.findIndex((item: any) => item.app_code === code) : -1;
-            if (index !== -1) {
-              const finallyIndex = Math.floor(index / 12) * 12;
-              setApps(
-                {
-                  app_list: apps.app_list.toSpliced(finallyIndex, 12, ...data.app_list) || [],
-                  total_count: data?.total_count || 0,
-                } || {},
-              );
-            } else {
-              console.log('concat');
-              setApps(
-                {
-                  app_list: apps.app_list.concat(data?.app_list) || [],
-                  total_count: data?.total_count || 0,
-                } || {},
-              );
-            }
+          // Ensure data is a non-null object before using the 'in' operator
+          if (data && typeof data === 'object' && 'app_list' in data) {
+            // Merge uniquely by app_code to avoid duplicates and support pagination reliably
+            setApps(prev => {
+              const prevList = prev.app_list || [];
+              const existingIndexMap = new Map<string, number>();
+              prevList.forEach((it: any, idx: number) => existingIndexMap.set(it.app_code, idx));
+              const nextList = [...prevList];
+              (data?.app_list || []).forEach((it: any) => {
+                const existIdx = existingIndexMap.get(it.app_code);
+                if (existIdx === undefined) {
+                  nextList.push(it);
+                } else {
+                  nextList[existIdx] = it; // update in place
+                }
+              });
+              return {
+                app_list: nextList,
+                total_count: (data as AppListResponse)?.total_count || prev.total_count || nextList.length,
+              } as any;
+            });
           }
         }
       },
@@ -153,13 +154,9 @@ const Playground: NextPage = () => {
   const columnCount = 3;
 
   function isRowLoaded({ index }: Index) {
-    // index here is ROW index from InfiniteLoader
+    // Consider the row loaded only if the first item in the row exists
     const startItem = index * columnCount;
-    const endItem = Math.min(startItem + columnCount, apps.total_count);
-    for (let i = startItem; i < endItem; i++) {
-      if (!apps.app_list[i]) return false;
-    }
-    return true;
+    return !!apps.app_list[startItem];
   }
 
   function loadMoreRows({ startIndex, stopIndex }: IndexRange) {
@@ -175,8 +172,9 @@ const Playground: NextPage = () => {
   const cellRenderer: GridCellRenderer = ({ columnIndex, key, rowIndex, style }) => {
     // Calculate the index in the array
     const index = rowIndex * columnCount + columnIndex;
-    if (!isRowLoaded({ index })) return null;
+    if (!isRowLoaded({ index: rowIndex })) return null;
     const item = apps.app_list[index];
+    if (!item) return null;
     return (
       <div key={key} style={style}>
         <BlurredCard
