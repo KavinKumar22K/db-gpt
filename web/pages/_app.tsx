@@ -1,6 +1,7 @@
 import { ChatContext, ChatContextProvider } from '@/app/chat-context';
 import SideBar from '@/components/layout/side-bar';
 // import FloatHelper from '@/new-components/layout/FloatHelper';
+import { POST, apiInterceptors } from '@/client/api';
 import { STORAGE_LANG_KEY, STORAGE_USERINFO_KEY, STORAGE_USERINFO_VALID_TIME_KEY } from '@/utils/constants/index';
 import { App, Button, Card, ConfigProvider, Form, Input, MappingAlgorithm, theme } from 'antd';
 import enUS from 'antd/locale/en_US';
@@ -9,7 +10,6 @@ import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
-import { POST, apiInterceptors } from '@/client/api';
 import { useTranslation } from 'react-i18next';
 import '../app/i18n';
 import '../nprogress.css';
@@ -80,10 +80,12 @@ function LayoutWrapper({ children }: { children: React.ReactNode }) {
           } else {
             try {
               // Use shared Axios client so requests go to the FastAPI baseURL
-              const [, valid] = await apiInterceptors(POST('/api/v1/auth/verify-neuron', {
-                token: neuron,
-                expected: info.user_id,
-              }));
+              const [, valid] = await apiInterceptors(
+                POST('/api/v1/auth/verify-neuron', {
+                  token: neuron,
+                  expected: info.user_id,
+                }),
+              );
               if (valid) {
                 setIsLogin(true);
               } else {
@@ -155,16 +157,47 @@ function LayoutWrapper({ children }: { children: React.ReactNode }) {
       return <>{children}</>;
     }
     return (
-      <div className='flex w-screen h-screen overflow-hidden'>
+      <div className='flex flex-col w-screen h-screen overflow-hidden'>
         <Head>
           <meta name='viewport' content='initial-scale=1.0, width=device-width, maximum-scale=1' />
         </Head>
-        {router.pathname !== '/construct/app/extra' && (
-          <div className={classNames('transition-[width]', isMenuExpand ? 'w-60' : 'w-20', 'hidden', 'md:block')}>
-            <SideBar />
+        <div
+          className={`flex w-full items-center justify-between border-b px-6 dark:bg-background`}
+          data-testid='app-header'
+          style={{
+            backgroundColor: '#111827e6',
+            opacity: '1',
+            height: '50px',
+            minHeight: '50px',
+            maxHeight: '60px',
+          }}
+        >
+          {/* Left Section */}
+          <div className={`z-30 flex items-center gap-2`} data-testid='header_left_section_wrapper'>
+            <Button
+              type='text'
+              onClick={() => {
+                document.title = 'Neuron';
+                router.push('/');
+              }}
+              className='mr-1 flex h-8 w-8 items-center'
+              data-testid='icon-ChevronLeft'
+            >
+              <img src='/images/neuron_logo.png' className='h-7 w-8' />
+            </Button>
+            <h1 className='text-2xl font-bold text-white'>Neuron</h1>
           </div>
-        )}
-        <div className='flex flex-col flex-1 relative overflow-hidden'>{children}</div>
+        </div>
+        <div className='flex flex-1 overflow-hidden'>
+          {router.pathname !== '/construct/app/extra' && (
+            <div className={classNames('transition-[width]', isMenuExpand ? 'w-60' : 'w-20', 'hidden', 'md:block')}>
+              <SideBar />
+            </div>
+          )}
+          <div className='flex-1 relative overflow-hidden'>
+            <div className='h-full overflow-auto'>{children}</div>
+          </div>
+        </div>
         {/* <FloatHelper /> */}
       </div>
     );
