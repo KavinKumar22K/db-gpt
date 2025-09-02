@@ -13,9 +13,22 @@ export default function LineChart({ chart }: { chart: ChartData }) {
       value: typeof item.value === 'string' ? parseFloat(item.value) || 0 : item.value,
     }));
 
+    // Global cap: keep only the first 10 unique x categories (name)
+    const seen = new Set<string>();
+    const keepNames: string[] = [];
+    for (const row of processedValues) {
+      const key = String(row.name);
+      if (!seen.has(key)) {
+        seen.add(key);
+        keepNames.push(key);
+        if (keepNames.length >= 10) break;
+      }
+    }
+    const limitedValues = processedValues.filter(r => keepNames.includes(String(r.name)));
+
     return {
       ...chart,
-      values: processedValues,
+      values: limitedValues,
     };
   }, [chart]);
 

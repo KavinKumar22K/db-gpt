@@ -108,6 +108,41 @@ export const AutoChart = (props: AutoChartProps) => {
           // Supplementary pie chart tooltip title exhibit
           spec.tooltip = { title: { field: spec.encode.color } };
         }
+
+        // ===== Global cap: limit categories to 10 items =====
+        const limitUnique = (arr: any[], field: string, max = 10) => {
+          if (!Array.isArray(arr)) return arr;
+          const seen = new Set<string>();
+          const keepValues: string[] = [];
+          for (const row of arr) {
+            const key = row?.[field];
+            if (key == null) continue;
+            const k = String(key);
+            if (!seen.has(k)) {
+              seen.add(k);
+              keepValues.push(k);
+              if (keepValues.length >= max) break;
+            }
+          }
+          if (!keepValues.length) return arr;
+          return arr.filter(row => keepValues.includes(String(row?.[field])));
+        };
+
+        // Prefer x field for categorical limit; fallback to color if no x
+        try {
+          const encode = (spec as any)?.encode || {};
+          if (Array.isArray((spec as any).data)) {
+            if (encode?.x && typeof encode.x === 'string') {
+              (spec as any).data = limitUnique((spec as any).data, encode.x, 10);
+            } else if (encode?.color && typeof encode.color === 'string') {
+              (spec as any).data = limitUnique((spec as any).data, encode.color, 10);
+            }
+          }
+        } catch (e) {
+          // noop: if shape unexpected, do not block rendering
+        }
+        // ===== End global cap =====
+
         return (
           <Chart
             key={chartTypeInput}

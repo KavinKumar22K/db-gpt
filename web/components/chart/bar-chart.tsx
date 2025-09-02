@@ -16,9 +16,22 @@ export default function BarChart({ chart }: { key: string; chart: ChartData }) {
       // Sort by value in descending order for better visualization
       .sort((a, b) => b.value - a.value);
 
+    // Global cap: keep only the first 10 unique x categories (name)
+    const seen = new Set<string>();
+    const keepNames: string[] = [];
+    for (const row of processedValues) {
+      const key = String(row.name);
+      if (!seen.has(key)) {
+        seen.add(key);
+        keepNames.push(key);
+        if (keepNames.length >= 10) break;
+      }
+    }
+    const limitedValues = processedValues.filter(r => keepNames.includes(String(r.name)));
+
     return {
       ...chart,
-      values: processedValues,
+      values: limitedValues,
     };
   }, [chart]);
 

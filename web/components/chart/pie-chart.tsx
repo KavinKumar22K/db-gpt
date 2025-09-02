@@ -12,10 +12,14 @@ export default function PieChart({ chart }: { key: string; chart: ChartData }) {
       return [];
     }
 
-    return chart.values.map(item => ({
+    const mapped = chart.values.map(item => ({
       name: item.name,
       value: Number(item.value) || 0,
     }));
+
+    // Global cap: keep top 10 by value
+    const sorted = mapped.sort((a, b) => b.value - a.value);
+    return sorted.slice(0, 10);
   }, [chart.values]);
 
   if (!pieData.length) {
