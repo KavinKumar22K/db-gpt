@@ -76,6 +76,9 @@ const formatMarkdownValForAgent = (val: string) => {
   return val?.replace(/<table(\w*=[^>]+)>/gi, '<table $1>').replace(/<tr(\w*=[^>]+)>/gi, '<tr $1>');
 };
 
+// Normalize escaped newline tokens to real line breaks for display
+const normalizeNewlines = (val: string) => val.replace(/\\n|\/n/g, '\n');
+
 const ChatContent: React.FC<{
   content: Omit<IChatDialogueMessageSchema, 'context'> & {
     context:
@@ -134,7 +137,8 @@ const ChatContent: React.FC<{
     return {
       relations,
       cachePluginContext,
-      value: result,
+      // Unescape any visible newline markers before rendering
+      value: normalizeNewlines(result),
     };
   }, [context]);
 

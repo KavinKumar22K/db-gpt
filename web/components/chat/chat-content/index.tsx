@@ -57,6 +57,12 @@ const pluginViewStatusMapper: Record<DBGPTView['status'], { bgClass: string; ico
   },
 };
 
+// Normalize escaped newline tokens to real line breaks for display
+function normalizeNewlines(val: string) {
+  // Replace both literal \n and stray /n that may appear in some model responses
+  return val.replace(/\\n|\/n/g, '\n');
+}
+
 function formatMarkdownVal(val: string) {
   return val.replace(/<table(\w*=[^>]+)>/gi, '<table $1>').replace(/<tr(\w*=[^>]+)>/gi, '<tr $1>');
 }
@@ -105,7 +111,8 @@ function ChatContent({ children, content, isChartChat, onLinkClick }: PropsWithC
     return {
       relations,
       cachePluginContext,
-      value: result,
+      // Unescape any visible newline markers before rendering
+      value: normalizeNewlines(result),
     };
   }, [context]);
 
@@ -154,11 +161,13 @@ function ChatContent({ children, content, isChartChat, onLinkClick }: PropsWithC
       </div>
       <div className='flex-1 overflow-hidden items-center text-md leading-8 pb-2'>
         {/* User Input */}
-        {!isRobot && typeof context === 'string' && context}
+        {!isRobot && typeof context === 'string' && (
+          <span style={{ whiteSpace: 'pre-wrap' }}>{normalizeNewlines(context)}</span>
+        )}
         {/* Render Report */}
         {isRobot && isChartChat && typeof context === 'object' && (
           <div>
-            {`[${context.template_name}]: `}
+            {[`${context.template_name}`]}: 
             <span className='text-theme-primary cursor-pointer' onClick={onLinkClick}>
               <CodeOutlined className='mr-1' />
               {context.template_introduce || 'More Details'}
