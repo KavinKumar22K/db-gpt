@@ -139,6 +139,7 @@ export const AutoChart = (props: AutoChartProps) => {
             }
           }
         } catch (e) {
+          console.log((e as any).message, e);
           // noop: if shape unexpected, do not block rendering
         }
         // ===== End global cap =====

@@ -167,7 +167,7 @@ function ChatContent({ children, content, isChartChat, onLinkClick }: PropsWithC
         {/* Render Report */}
         {isRobot && isChartChat && typeof context === 'object' && (
           <div>
-            {[`${context.template_name}`]}: 
+            {[`${context.template_name}`]}:
             <span className='text-theme-primary cursor-pointer' onClick={onLinkClick}>
               <CodeOutlined className='mr-1' />
               {context.template_introduce || 'More Details'}
