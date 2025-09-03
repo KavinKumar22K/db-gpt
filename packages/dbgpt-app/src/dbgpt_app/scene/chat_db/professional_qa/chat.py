@@ -33,7 +33,7 @@ class ChatWithDbQA(BaseChat):
         super().__init__(chat_param=chat_param, system_app=system_app)
 
         if self.db_name is None:
-            raise Exception(f"Database: {self.db_name} not found")
+            raise Exception("Database not found")
         if self.db_name:
             local_db_manager = ConnectorManager.get_instance(self.system_app)
             self.database = local_db_manager.get_connector(self.db_name)

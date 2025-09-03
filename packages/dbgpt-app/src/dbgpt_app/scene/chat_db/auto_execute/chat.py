@@ -36,9 +36,10 @@ class ChatWithDbAutoExecute(BaseChat):
         self.curr_config = chat_param.real_app_config(ChatWithDBExecuteConfig)
         super().__init__(chat_param=chat_param, system_app=system_app)
         if not self.db_name:
-            raise ValueError(
-                f"{ChatScene.ChatWithDbExecute.value} mode should chose db!"
-            )
+            raise Exception("Database not found")
+            # raise ValueError(
+            #     f"{ChatScene.ChatWithDbExecute.value} mode should chose db!"
+            # )
         with root_tracer.start_span(
             "ChatWithDbAutoExecute.get_connect", metadata={"db_name": self.db_name}
         ):
