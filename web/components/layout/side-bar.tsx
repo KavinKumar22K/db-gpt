@@ -1,10 +1,10 @@
 import { ChatContext } from '@/app/chat-context';
 import { DarkSvg, SunnySvg } from '@/components/icons';
 // import UserBar from '@/new-components/layout/UserBar';
-import { STORAGE_LANG_KEY, STORAGE_THEME_KEY, STORAGE_USERINFO_KEY } from '@/utils/constants/index';
+import { STORAGE_LANG_KEY, STORAGE_THEME_KEY, STORAGE_UI_ADMIN_KEY } from '@/utils/constants/index';
 import Icon, { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { Popover, Tooltip } from 'antd';
-import { ItemType } from 'antd/es/menu/hooks/useItems';
+
 import cls from 'classnames';
 import moment from 'moment';
 
@@ -20,7 +20,7 @@ type SettingItem = {
   icon: ReactNode;
   noDropdownItem?: boolean;
   onClick?: () => void;
-  items?: ItemType[];
+  items?: any[];
   onSelect?: (p: { key: string }) => void;
   defaultSelectedKeys?: string[];
   placement?: 'top' | 'topLeft';
@@ -55,23 +55,16 @@ function SideBar() {
   const { t, i18n } = useTranslation();
 
   const hasAdmin = useMemo(() => {
-    const { user_id } = JSON.parse(localStorage.getItem(STORAGE_USERINFO_KEY) || '{}');
-    return adminList.some(admin => admin.user_id === user_id);
-  }, [adminList]);
-
-  const hasConstructAccess = useMemo(() => {
     try {
-      const { user_id } = JSON.parse(localStorage.getItem(STORAGE_USERINFO_KEY) || '{}');
-      if (!user_id) return false;
-      const envAllow = (process.env.NEXT_PUBLIC_CONSTRUCT_ALLOWED_USER_IDS || '')
-        .split(',')
-        .map(s => s.trim())
-        .filter(Boolean);
-      return hasAdmin || envAllow.includes(user_id);
+      const raw = localStorage.getItem(STORAGE_UI_ADMIN_KEY) || '';
+      const parsed = raw ? JSON.parse(raw) : null;
+      return parsed?.state?.isUIAdmin === true;
     } catch {
-      return hasAdmin;
+      return false;
     }
-  }, [hasAdmin]);
+  }, []);
+
+  const hasConstructAccess = hasAdmin;
 
   // TODO: unused function
   // const routes = useMemo(() => {
