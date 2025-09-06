@@ -50,7 +50,7 @@ function smallMenuItemStyle(active?: boolean) {
 function SideBar() {
   // const { chatId, scene, isMenuExpand, refreshDialogList, setIsMenuExpand, setAgent, mode, setMode, adminList } =
   //   useContext(ChatContext);
-  const { isMenuExpand, setIsMenuExpand, mode, setMode, adminList } = useContext(ChatContext);
+  const { isMenuExpand, setIsMenuExpand, mode, setMode } = useContext(ChatContext);
   const { pathname } = useRouter();
   const { t, i18n } = useTranslation();
 
