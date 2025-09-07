@@ -100,9 +100,19 @@ export const postDbRefresh = (data: PostDbRefreshParams) => {
   return POST<PostDbRefreshParams, boolean>(`/api/v2/serve/datasources/${data.id}/refresh`);
 };
 
+interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  page_size: number;
+  has_more: boolean;
+}
+
 /** Chat Page */
-export const getDialogueList = () => {
-  return GET<null, DialogueListResponse>('/api/v1/chat/dialogue/list');
+export const getDialogueList = (page: number = 1, pageSize: number = 10) => {
+  return GET<null, PaginatedResponse<IChatDialogueSchema>>(
+    `/api/v1/chat/dialogue/list?page=${page}&page_size=${pageSize}`
+  );
 };
 export const getUsableModels = () => {
   return GET<null, Array<string>>('/api/v1/model/types');

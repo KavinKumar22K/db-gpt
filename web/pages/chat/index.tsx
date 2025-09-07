@@ -133,14 +133,57 @@ const Chat: React.FC = () => {
     return !chatId && !scene;
   }, [chatId, scene]);
 
-  // Get the session list
+  // State for pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [allDialogues, setAllDialogues] = useState<IChatDialogueSchema[]>([]);
+
+  // Get the session list with pagination
   const {
-    data: dialogueList = [],
     refresh: refreshDialogList,
     loading: listLoading,
-  } = useRequest(async () => {
-    return await apiInterceptors(getDialogueList());
-  });
+    run: loadMoreDialogues,
+  } = useRequest(
+    async (page = 1) => {
+      const [err, data] = await apiInterceptors(getDialogueList(page));
+      if (err) {
+        return { items: [], total: 0, page, page_size: 10, has_more: false };
+      }
+      return data;
+    },
+    {
+      manual: true,
+      onSuccess: data => {
+        if (data.page === 1) {
+          setAllDialogues(data.items);
+        } else {
+          setAllDialogues(prev => [...prev, ...data.items]);
+        }
+        setHasMore(data.has_more);
+        setCurrentPage(data.page);
+      },
+    },
+  );
+
+  // Initial load
+  useEffect(() => {
+    loadMoreDialogues(1);
+  }, [loadMoreDialogues]);
+
+  // Handle loading more conversations
+  const handleLoadMore = () => {
+    if (!listLoading && hasMore) {
+      loadMoreDialogues(currentPage + 1);
+    }
+  };
+
+  // Refresh dialog list
+  const refreshDialogListWithReset = useCallback(() => {
+    setAllDialogues([]);
+    setCurrentPage(1);
+    setHasMore(true);
+    loadMoreDialogues(1);
+  }, [loadMoreDialogues]);
 
   // Get application details
   const { run: queryAppInfo, refresh: refreshAppInfo } = useRequest(
@@ -161,9 +204,8 @@ const Chat: React.FC = () => {
 
   // List of currently active conversations
   const currentDialogue = useMemo(() => {
-    const [, list] = dialogueList;
-    return list?.find(item => item.conv_uid === chatId) || ({} as IChatDialogueSchema);
-  }, [chatId, dialogueList]);
+    return allDialogues?.find(item => item.conv_uid === chatId) || ({} as IChatDialogueSchema);
+  }, [chatId, allDialogues]);
 
   useEffect(() => {
     const initMessage = getInitMessage();
@@ -395,11 +437,13 @@ const Chat: React.FC = () => {
       <Flex flex={1}>
         <Layout className='bg-gradient-light bg-cover bg-center dark:bg-gradient-dark'>
           <ChatSider
-            refresh={refreshDialogList}
-            dialogueList={dialogueList}
-            listLoading={listLoading}
+            dialogueList={allDialogues}
+            refresh={refreshDialogListWithReset}
             historyLoading={historyLoading}
+            listLoading={listLoading}
             order={order}
+            hasMore={hasMore}
+            onLoadMore={handleLoadMore}
           />
           <Layout className='bg-transparent'>
             {contentRender()}

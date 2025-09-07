@@ -145,13 +145,26 @@ const MenuItem: React.FC<{
   );
 };
 
-const ChatSider: React.FC<{
-  dialogueList: any;
-  refresh: () => void;
-  historyLoading: boolean;
-  listLoading: boolean;
+// Ensure dialogueList is always treated as an array
+type ChatSiderProps = {
+  dialogueList?: IChatDialogueSchema[] | IChatDialogueSchema;
+  refresh?: () => void;
+  historyLoading?: boolean;
+  listLoading?: boolean;
   order: React.MutableRefObject<number>;
-}> = ({ dialogueList = [], refresh, historyLoading, listLoading, order }) => {
+  hasMore?: boolean;
+  onLoadMore?: () => void;
+}
+
+const ChatSider: React.FC<ChatSiderProps> = ({
+  dialogueList = [],
+  refresh,
+  historyLoading,
+  listLoading,
+  order,
+  hasMore,
+  onLoadMore,
+}) => {
   const searchParams = useSearchParams();
   const scene = searchParams?.get('scene') ?? '';
   const { t } = useTranslation();
@@ -176,17 +189,17 @@ const ChatSider: React.FC<{
 
   // Session list configuration item
   const items: MenuProps['items'] = useMemo(() => {
-    const list = dialogueList[1] || [];
-    if (list?.length > 0) {
-      return list.map((item: IChatDialogueSchema) => ({
-        ...item,
-        label: item.user_input || item.select_param,
+    // Ensure we have a valid array of dialogues
+    const normalizedList = Array.isArray(dialogueList) ? dialogueList : [];
+    
+    return normalizedList.map((item: IChatDialogueSchema) => {
+      const label = item.user_input || item.select_param || item.conv_uid;
+      return {
         key: item.conv_uid,
-        icon: <AppDefaultIcon scene={item.chat_mode} />,
-        default: false,
-      }));
-    }
-    return [];
+        label: typeof label === 'string' ? label : JSON.stringify(label),
+        icon: <AppDefaultIcon scene={item.chat_mode || 'chat_default'} />,
+      };
+    });
   }, [dialogueList]);
 
   return (
@@ -216,11 +229,51 @@ const ChatSider: React.FC<{
             order={order}
           />
           <Spin spinning={listLoading} className='mt-2'>
-            {!!items?.length &&
-              items.map(item => (
-                <MenuItem key={item?.key} item={item} refresh={refresh} historyLoading={historyLoading} order={order} />
-              ))}
+            {(() => {
+              // Normalize dialogueList to always be an array
+              const items = (() => {
+                if (!dialogueList) return [];
+                return Array.isArray(dialogueList) ? dialogueList : [dialogueList];
+              })();
+  
+              if (items.length === 0 && !listLoading) {
+                return (
+                  <div className="text-center text-gray-500 py-4">
+                    No conversations yet
+                  </div>
+                );
+              }
+  
+              return items.map(item => {
+                const menuItem = {
+                  ...item,
+                  label: item.conv_uid, // Use conv_uid as label if name is not available
+                  key: item.conv_uid,
+                  icon: <AppDefaultIcon scene={item.chat_mode || 'chat_default'} />,
+                };
+                return (
+                  <MenuItem 
+                    key={item.conv_uid} 
+                    item={menuItem} 
+                    refresh={refresh} 
+                    historyLoading={historyLoading} 
+                    order={order} 
+                  />
+                );
+              });
+            })()}
           </Spin>
+          {hasMore && !listLoading && (
+            <div className='p-4 border-t border-gray-200 dark:border-gray-700'>
+              <button
+                onClick={onLoadMore}
+                disabled={listLoading}
+                className='w-full py-2 px-4 text-sm font-medium text-center text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600'
+              >
+                {t('Load_more')}
+              </button>
+            </div>
+          )}
         </Flex>
       </div>
     </Sider>

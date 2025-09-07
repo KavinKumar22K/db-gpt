@@ -2,7 +2,7 @@ import io
 import json
 import uuid
 from functools import cache
-from typing import List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.security.http import HTTPAuthorizationCredentials, HTTPBearer
@@ -206,26 +206,33 @@ async def query_page(
 
 @router.get(
     "/list",
-    response_model=Result[List[ServerResponse]],
+    response_model=Result[Dict[str, Any]],
     dependencies=[Depends(check_api_key)],
 )
 async def list_latest_conv(
     user_name: str = None,
     user_id: str = None,
     sys_code: str = None,
-    page: Optional[int] = Query(default=1, description="current page"),
-    page_size: Optional[int] = Query(default=10, description="page size"),
+    page: int = Query(default=1, ge=1, description="Current page number"),
+    page_size: int = Query(default=10, ge=1, le=100, description="Number of items per page"),
     service: Service = Depends(get_service),
     user_token: UserRequest = Depends(get_user_from_headers),
-) -> Result[List[ServerResponse]]:
-    """Return latest conversations"""
+) -> Result[Dict[str, Any]]:
+    """Return paginated list of conversations with metadata"""
     # Always prefer authenticated user from headers
     effective_user = user_token.user_id if user_token and user_token.user_id else None
     request = ServeRequest(
         user_name=effective_user or user_name or user_id,
         sys_code=sys_code,
     )
-    return Result.succ(service.get_list_by_page(request, page, page_size).items)
+    pagination_result = service.get_list_by_page(request, page, page_size)
+    return Result.succ({
+        "items": pagination_result.items,
+        "total": pagination_result.total_count,
+        "page": page,
+        "page_size": page_size,
+        "has_more": (page * page_size) < pagination_result.total_count
+    })
 
 
 @router.get(
