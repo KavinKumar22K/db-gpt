@@ -10,20 +10,32 @@ import Icon, {
 import { ConfigProvider, Result, Tabs, Button } from 'antd';
 import { t } from 'i18next';
 import { useRouter } from 'next/router';
-import React, { useMemo } from 'react';
-import { STORAGE_UI_ADMIN_KEY } from '@/utils/constants/index';
+import React from 'react';
+import useUser from '@/hooks/use-user';
+import { useContext, useMemo } from 'react';
+import { ChatContext } from '@/app/chat-context';
+import { STORAGE_USERINFO_KEY } from '@/utils/constants/index';
 import './style.css';
 
 function ConstructLayout({ children }: { children: React.ReactNode }) {
+  const user = useUser() as any;
+  const { adminList } = useContext(ChatContext);
   const hasAccess = useMemo(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_UI_ADMIN_KEY) || '';
-      const parsed = raw ? JSON.parse(raw) : null;
-      return parsed?.state?.isUIAdmin === true;
+      const { user_id } = JSON.parse(localStorage.getItem(STORAGE_USERINFO_KEY) || '{}');
+      if (!user_id) return false;
+      const envAllow = (process.env.NEXT_PUBLIC_CONSTRUCT_ALLOWED_USER_IDS || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+      return (
+        adminList.some((admin: any) => admin.user_id === user_id) ||
+        envAllow.includes(user_id)
+      );
     } catch {
       return false;
     }
-  }, []);
+  }, [adminList]);
   const items = [
     {
       key: 'app',
