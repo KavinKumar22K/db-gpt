@@ -11,7 +11,8 @@ class DatasourceServeRequest(BaseModel):
     """vector_type: vector type"""
     id: Optional[int] = Field(None, description="The datasource id")
     db_type: str = Field(..., description="Database type, e.g. sqlite, mysql, etc.")
-    db_name: str = Field(..., description="Database name.")
+    # Optional to support connectors that don't have a single database concept (e.g., Trino)
+    db_name: Optional[str] = Field("", description="Database name.")
     db_path: Optional[str] = Field("", description="File path for file-based database.")
     db_host: Optional[str] = Field("", description="Database host.")
     db_port: Optional[int] = Field(0, description="Database port.")

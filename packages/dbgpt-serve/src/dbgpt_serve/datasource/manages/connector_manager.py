@@ -68,6 +68,7 @@ class ConnectorManager(BaseComponent):
         from dbgpt_ext.datasource.rdbms.conn_postgresql import (  # noqa: F401
             PostgreSQLConnector,
         )
+        from dbgpt_ext.datasource.rdbms.conn_trino import TrinoConnector  # noqa: F401
         from dbgpt_ext.datasource.rdbms.conn_sqlite import SQLiteConnector  # noqa: F401
         from dbgpt_ext.datasource.rdbms.conn_starrocks import (  # noqa: F401
             StarRocksConnector,
@@ -201,22 +202,33 @@ class ConnectorManager(BaseComponent):
             db_user = db_config.get("db_user")
             db_pwd = db_config.get("db_pwd")
 
-            try:
-                ext_config = db_config.get("ext_config")
-                db_json = json.loads(ext_config)
-                schema = db_json.get("schema", None)
-            except json.JSONDecodeError:
-                # 处理解码失败的情况
-                db_json = {}
-                schema = None
-            return connect_instance.from_uri_db(  # type: ignore
-                host=db_host,
-                port=db_port,
-                user=db_user,
-                pwd=db_pwd,
-                db_name=db_name,
-                schema=schema,
-            )
+            # Only Trino uses catalog/schema in its from_uri_db signature
+            if db_type.value() == "trino":
+                try:
+                    ext_config = db_config.get("ext_config")
+                    db_json = json.loads(ext_config) if ext_config else {}
+                    schema = db_json.get("schema", None)
+                    catalog = db_json.get("catalog", None)
+                except json.JSONDecodeError:
+                    schema = None
+                    catalog = None
+                return connect_instance.from_uri_db(  # type: ignore
+                    host=db_host,
+                    port=db_port,
+                    user=db_user,
+                    pwd=db_pwd,
+                    catalog=catalog or "postgres",
+                    schema=schema or "public",
+                )
+            else:
+                # Non-Trino connectors should not receive catalog/schema kwargs
+                return connect_instance.from_uri_db(  # type: ignore
+                    host=db_host,
+                    port=db_port,
+                    user=db_user,
+                    pwd=db_pwd,
+                    db_name=db_name,
+                )
 
     def _create_parameters(
         self, request: DatasourceCreateRequest

@@ -18,6 +18,7 @@ export type DBType =
   | 'clickhouse'
   | 'oracle'
   | 'postgresql'
+  | 'trino'
   | 'vertica'
   | 'db2'
   | 'access'

@@ -295,6 +295,11 @@ export const dbMapper: Record<DBType, { label: string; icon: string; desc: strin
     icon: '/datainsights-service/icons/postgresql.png',
     desc: 'Powerful open-source relational database with extensibility and SQL standards.',
   },
+  trino: {
+    label: 'Trino',
+    icon: '/datainsights-service/icons/postgresql.png',
+    desc: 'Distributed SQL query engine for interactive analytics across diverse data sources.',
+  },
   gaussdb: {
     label: 'GaussDB',
     icon: '/datainsights-service/icons/gaussdb.png',

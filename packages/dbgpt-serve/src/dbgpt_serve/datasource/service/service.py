@@ -128,6 +128,33 @@ class Service(
         else:
             persisted_state = model_to_dict(request)
             desc = request.comment
+        # Ensure db_name exists for persistence and downstream features
+        # Try to infer when not explicitly provided (e.g., new-style requests)
+        if not persisted_state.get("db_name"):
+            # Prefer explicit database when present (traditional RDBMS)
+            db_name_candidate = persisted_state.get("database")
+            if db_name_candidate:
+                persisted_state["db_name"] = db_name_candidate
+            elif str_db_type == "trino":
+                # Trino: compose from catalog/schema
+                cat = persisted_state.get("catalog")
+                sch = persisted_state.get("schema")
+                # For DatasourceCreateRequest path, params are usually under ext_config
+                if (not cat or not sch) and "ext_config" in persisted_state:
+                    ext_conf = persisted_state.get("ext_config")
+                    try:
+                        if isinstance(ext_conf, str):
+                            ext_conf_obj = json.loads(ext_conf) if ext_conf else {}
+                        else:
+                            ext_conf_obj = ext_conf or {}
+                    except Exception:
+                        ext_conf_obj = {}
+                    cat = cat or ext_conf_obj.get("catalog")
+                    sch = sch or ext_conf_obj.get("schema")
+                if cat and sch:
+                    persisted_state["db_name"] = f"{cat}/{sch}"
+                elif cat:
+                    persisted_state["db_name"] = cat
         if "ext_config" in persisted_state and isinstance(
             persisted_state["ext_config"], dict
         ):

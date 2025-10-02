@@ -257,7 +257,7 @@ function Database() {
                   className='mb-4'
                 >
                   <>
-                    {['host', 'port', 'path', 'user', 'database', 'schema']
+                    {['host', 'port', 'path', 'user', 'database', 'schema', 'catalog']
                       // Just handle these keys
                       .filter(key => Object.prototype.hasOwnProperty.call(item.params, key))
                       .map(key => (
