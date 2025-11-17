@@ -96,16 +96,22 @@ class DbChatOutputParser(BaseOutputParser):
                 break
             elif isinstance(df.iloc[:, i_col][0], bytes):
                 sample = df.iloc[:, i_col][0]
-                if isinstance(json.loads(sample.decode()), list):
-                    vec_col = i_col
-                    break
+                try:
+                    sample_decoded = sample.decode("utf-8", errors="replace")
+                    if isinstance(json.loads(sample_decoded), list):
+                        vec_col = i_col
+                        break
+                except Exception:
+                    # Not a json list vector column, continue
+                    pass
         if vec_col == -1:
             return df, False
-        vec_dim = len(json.loads(df.iloc[:, vec_col][0].decode()))
+        # Robustly decode to compute vector dimension
+        vec_dim = len(json.loads(df.iloc[:, vec_col][0].decode("utf-8", errors="replace")))
         if min(nrow, vec_dim) < 2:
             return df, False
         df.iloc[:, vec_col] = df.iloc[:, vec_col].apply(
-            lambda x: json.loads(x.decode())
+            lambda x: json.loads(x.decode("utf-8", errors="replace"))
         )
         X = np.array(df.iloc[:, vec_col].tolist())
 
@@ -121,6 +127,40 @@ class DbChatOutputParser(BaseOutputParser):
         new_df["__x"] = [pos[0] for pos in X_pca]
         new_df["__y"] = [pos[1] for pos in X_pca]
         return new_df, True
+
+    def _safe_decode_bytes(self, obj):
+        """Decode bytes to utf-8 safely with replacement.
+
+        Also handle nested lists/tuples/dicts containing bytes.
+        """
+        if isinstance(obj, bytes):
+            return obj.decode("utf-8", errors="replace")
+        if isinstance(obj, (list, tuple)):
+            typ = type(obj)
+            return typ(self._safe_decode_bytes(v) for v in obj)
+        if isinstance(obj, dict):
+            return {self._safe_decode_bytes(k): self._safe_decode_bytes(v) for k, v in obj.items()}
+        # Numpy scalar types -> python native
+        if isinstance(obj, (np.generic,)):
+            try:
+                return obj.item()
+            except Exception:
+                return str(obj)
+        return obj
+
+    def _sanitize_df_for_json(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Ensure all cell values are JSON-serializable and UTF-8 safe.
+
+        - Decode bytes with errors='replace'.
+        - Decode lists/tuples/dicts of bytes recursively.
+        - Convert numpy scalar types to python types.
+        """
+        def sanitize_value(v):
+            return self._safe_decode_bytes(v)
+
+        for col in df.columns:
+            df[col] = df[col].apply(sanitize_value)
+        return df
 
     def parse_view_response(self, speak, data, prompt_response) -> str:
         param = {}
@@ -145,8 +185,14 @@ class DbChatOutputParser(BaseOutputParser):
                     )
 
                 param["sql"] = prompt_response.sql
+                # Sanitize DataFrame to avoid UTF-8 encoding issues
+                try:
+                    safe_df = self._sanitize_df_for_json(df.copy())
+                except Exception:
+                    # Fallback to original df if sanitation fails
+                    safe_df = df
                 param["data"] = json.loads(
-                    df.to_json(orient="records", date_format="iso", date_unit="s")
+                    safe_df.to_json(orient="records", date_format="iso", date_unit="s")
                 )
                 view_json_str = json.dumps(param, default=serialize, ensure_ascii=False)
                 success = True
