@@ -56,12 +56,20 @@ Constraints:
 	<api-call><name>[display method]</name><args><sql>\
 	[correct duckdb data analysis sql]</sql></args></api-call> \
 	format, refer to the return format requirements
+	8. In addition to answering the user's main question, also propose 5-10 diverse and \
+	relevant visualizations that help understand the dataset (e.g., distributions, \
+	time trends, categorical proportions, correlations, top-N breakdowns, outliers). \
+	Return each visualization as its own <api-call> block with the appropriate display \
+	type and a correct DuckDB SQL. Avoid duplicate or redundant charts.
 
 Please think step by step, provide an answer, and ensure your answer format is as \
 follows:
     [Summary of what the user wants]\
     <api-call><name>[display method]</name><args>\
-    <sql>[correct duckdb data analysis sql]</sql></args></api-call>
+    <sql>[correct duckdb data analysis sql]</sql></args></api-call>\
+    \n+    [Additional recommended charts]\
+    <api-call>...one per chart suggestion...</api-call>\
+    <api-call>...one per chart suggestion...</api-call>
 You can refer to the examples below:
 Example 1:
 user: 分析各地区的销售额和利润，需要显示地区名称、总销售额、\
@@ -147,10 +155,16 @@ DuckDB SQL数据分析回答用户的问题。
 	<api-call><name>[数据显示方式]</name><args><sql>\
 	[正确的duckdb数据分析sql]</sql></args></api-call> \
 	这样的格式，参考返回格式要求
+	8. 除回答用户的主要问题外，请额外给出 5-10 个有助于理解数据集的可视化建议 \
+	（如分布、时间趋势、类别占比、相关性、Top-N 细分、异常点等），\
+	每个可视化以单独的 <api-call> 模块返回，包含合适的展示类型与正确的 DuckDB SQL，避免重复冗余。
 	
 请一步一步思考，给出回答，并确保你的回答内容格式如下:
     [对用户说的想法摘要]<api-call><name>[数据展示方式]</name><args>\
-    <sql>[正确的duckdb数据分析sql]</sql></args></api-call>
+    <sql>[正确的duckdb数据分析sql]</sql></args></api-call>\
+    \n+    [更多推荐图表]\
+    <api-call>...每个图表一段...</api-call>\
+    <api-call>...每个图表一段...</api-call>
 
 你可以参考下面的样例:
 
