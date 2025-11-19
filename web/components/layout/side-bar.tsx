@@ -393,7 +393,7 @@ function SideBar() {
   if (!isMenuExpand) {
     return (
       <div
-        className='flex flex-col justify-between pt-4 h-screen bg-bar dark:bg-[#232734] animate-fade animate-duration-300'
+        className='flex flex-col justify-between pt-4 h-full bg-bar dark:bg-[#232734] animate-fade animate-duration-300'
         // onMouseEnter={() => {
         // setIsMenuExpand(true);
         // }}
@@ -428,7 +428,7 @@ function SideBar() {
 
   return (
     <div
-      className='flex flex-col justify-between h-screen px-4 pt-4 bg-bar dark:bg-[#232734] animate-fade animate-duration-300'
+      className='flex flex-col justify-between h-full px-4 pt-4 bg-bar dark:bg-[#232734] animate-fade animate-duration-300'
       // onMouseLeave={() => {
       //   setIsMenuExpand(false);
       // }}

@@ -191,7 +191,7 @@ function LayoutWrapper({ children }: { children: React.ReactNode }) {
         </div>
         <div className='flex flex-1 overflow-hidden'>
           {router.pathname !== '/construct/app/extra' && (
-            <div className={classNames('transition-[width]', isMenuExpand ? 'w-60' : 'w-20', 'hidden', 'md:block')}>
+            <div className={classNames('transition-[width]', isMenuExpand ? 'w-60' : 'w-20')}>
               <SideBar />
             </div>
           )}
