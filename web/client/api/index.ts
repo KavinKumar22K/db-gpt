@@ -1,5 +1,5 @@
-import { getUserId } from '@/utils';
-import { HEADER_USER_ID_KEY } from '@/utils/constants/index';
+import { getUserId, getUserRole } from '@/utils';
+import { HEADER_USER_ID_KEY, HEADER_USER_ROLE_KEY } from '@/utils/constants/index';
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 export type ResponseType<T = any> = {
@@ -44,6 +44,10 @@ ins.interceptors.request.use(request => {
     request.timeout = isLongTimeApi ? 60000 : 100000;
   }
   request.headers.set(HEADER_USER_ID_KEY, getUserId());
+  const role = getUserRole();
+  if (role) {
+    request.headers.set(HEADER_USER_ROLE_KEY, role);
+  }
   return request;
 });
 

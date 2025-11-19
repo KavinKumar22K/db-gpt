@@ -18,3 +18,13 @@ export function getUserId(): string | undefined {
     return undefined;
   }
 }
+
+export function getUserRole(): 'admin' | 'normal' | undefined {
+  try {
+    const role = JSON.parse(localStorage.getItem(STORAGE_USERINFO_KEY) ?? '')['role'];
+    if (role === 'admin' || role === 'normal') return role;
+    return undefined;
+  } catch {
+    return undefined;
+  }
+}

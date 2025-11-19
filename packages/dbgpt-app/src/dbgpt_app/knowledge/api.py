@@ -93,9 +93,15 @@ async def space_add(request: KnowledgeSpaceRequest):
 
 
 @router.post("/knowledge/space/list")
-async def space_list(request: KnowledgeSpaceRequest):
+async def space_list(
+    request: KnowledgeSpaceRequest,
+    user_token=Depends(get_user_from_headers),
+):
     logger.info(f"/space/list params: {request}")
     try:
+        # Enforce role-based visibility: non-admins only see their own spaces unless owner explicitly provided
+        if request.owner is None and getattr(user_token, "role", "normal") != "admin":
+            request.owner = getattr(user_token, "user_id", None)
         res = await blocking_func_to_async(
             get_executor(), knowledge_space_service.get_knowledge_space, request
         )

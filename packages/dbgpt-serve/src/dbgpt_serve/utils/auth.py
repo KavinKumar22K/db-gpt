@@ -21,17 +21,26 @@ class UserRequest(BaseModel):
     avatar_url: Optional[str] = None
     nick_name_like: Optional[str] = None
 
-
-def get_user_from_headers(user_id: Optional[str] = Header(None)):
+def get_user_from_headers(
+    user_id: Optional[str] = Header(None),
+    role: Optional[str] = Header(None),
+):
     try:
-        # Mock User Info
+        # Build user info from headers; default to normal user
+        resolved_role = role if role in ["admin", "normal"] else "normal"
         if user_id:
             return UserRequest(
-                user_id=user_id, role="admin", nick_name=user_id, real_name=user_id
+                user_id=user_id,
+                role=resolved_role,
+                nick_name=user_id,
+                real_name=user_id,
             )
         else:
             return UserRequest(
-                user_id="001", role="admin", nick_name="dbgpt", real_name="dbgpt"
+                user_id="001",
+                role=resolved_role,
+                nick_name="dbgpt",
+                real_name="dbgpt",
             )
     except Exception as e:
         logging.exception("Authentication failed!")
