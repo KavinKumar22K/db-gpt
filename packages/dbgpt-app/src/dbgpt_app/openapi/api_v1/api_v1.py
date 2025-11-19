@@ -125,7 +125,8 @@ def knowledge_list_info():
 
 def knowledge_list(user_id: str = None):
     """return knowledge space list"""
-    request = KnowledgeSpaceRequest(user_id=user_id)
+    # Filter by owner when user_id is provided; admins are handled by upstream caller
+    request = KnowledgeSpaceRequest(owner=user_id)
     spaces = knowledge_service.get_knowledge_space(request)
     space_list = []
     for space in spaces:
@@ -386,7 +387,8 @@ async def resource_params_list(
     if resource_type == "database":
         result = get_db_list(user_token.user_id)
     elif resource_type == "knowledge":
-        result = knowledge_list(user_token.user_id)
+        # Admins see all knowledge spaces
+        result = knowledge_list(None if user_token.role == "admin" else user_token.user_id)
     elif resource_type == "tool":
         result = plugins_select_info()
     else:
@@ -408,9 +410,10 @@ async def params_list(
     elif ChatScene.ChatExecution.value() == chat_mode:
         result = plugins_select_info()
     elif ChatScene.ChatKnowledge.value() == chat_mode:
-        result = knowledge_list(user_token.user_id)
+        # Admins see all knowledge spaces
+        result = knowledge_list(None if user_token.role == "admin" else user_token.user_id)
     elif ChatScene.ChatKnowledge.ExtractRefineSummary.value() == chat_mode:
-        result = knowledge_list(user_token.user_id)
+        result = knowledge_list(None if user_token.role == "admin" else user_token.user_id)
     else:
         return Result.succ()
     return Result.succ(result)
