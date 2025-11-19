@@ -12,7 +12,7 @@ import { t } from 'i18next';
 import { useRouter } from 'next/router';
 import React from 'react';
 import useUser from '@/hooks/use-user';
-import { useContext, useMemo } from 'react';
+import { useContext, useMemo, useEffect } from 'react';
 import { ChatContext } from '@/app/chat-context';
 import { STORAGE_USERINFO_KEY } from '@/utils/constants/index';
 import './style.css';
@@ -36,87 +36,72 @@ function ConstructLayout({ children }: { children: React.ReactNode }) {
       return false;
     }
   }, [adminList]);
-  const items = [
-    {
-      key: 'app',
-      name: t('App'),
-      path: '/app',
-      icon: <AppstoreOutlined />,
-      // operations: (
-      //   <Button
-      //     className='border-none text-white bg-button-gradient h-full flex items-center'
-      //     icon={<PlusOutlined className='text-base' />}
-      //     // onClick={handleCreate}
-      //   >
-      //     {t('create_app')}
-      //   </Button>
-      // ),
-    },
-    {
-      key: 'flow',
-      name: t('awel_flow'),
-      icon: <ForkOutlined />,
-      path: '/flow',
-    },
-    {
-      key: 'models',
-      name: t('model_manage'),
-      path: '/models',
-      icon: <Icon component={ModelSvg} />,
-    },
-    {
-      key: 'database',
-      name: t('Database'),
-      icon: <ConsoleSqlOutlined />,
-      path: '/database',
-    },
-    {
-      key: 'knowledge',
-      name: t('Knowledge_Space'),
-      icon: <PartitionOutlined />,
-      path: '/knowledge',
-    },
-    // {
-    //   key: 'agent',
-    //   name: t('Plugins'),
-    //   path: '/agent',
-    //   icon: <BuildOutlined />,
-    // },
-    {
-      key: 'prompt',
-      name: t('Prompt'),
-      icon: <MessageOutlined />,
-      path: '/prompt',
-    },
-    {
-      key: 'dbgpts',
-      name: t('dbgpts_community'),
-      path: '/dbgpts',
-      icon: <BuildOutlined />,
-    },
-  ];
+  // Build tab items: always expose Database and Knowledge; other tabs only for admins/allowed users
+  const items = useMemo(() => {
+    const base = [
+      {
+        key: 'database',
+        name: t('Database'),
+        icon: <ConsoleSqlOutlined />,
+        path: '/database',
+      },
+      {
+        key: 'knowledge',
+        name: t('Knowledge_Space'),
+        icon: <PartitionOutlined />,
+        path: '/knowledge',
+      },
+    ];
+    if (hasAccess) {
+      base.unshift(
+        {
+          key: 'app',
+          name: t('App'),
+          path: '/app',
+          icon: <AppstoreOutlined />,
+        },
+        {
+          key: 'flow',
+          name: t('awel_flow'),
+          icon: <ForkOutlined />,
+          path: '/flow',
+        },
+        {
+          key: 'models',
+          name: t('model_manage'),
+          path: '/models',
+          icon: <Icon component={ModelSvg} />,
+        },
+      );
+      base.push(
+        {
+          key: 'prompt',
+          name: t('Prompt'),
+          icon: <MessageOutlined />,
+          path: '/prompt',
+        },
+        {
+          key: 'dbgpts',
+          name: t('dbgpts_community'),
+          path: '/dbgpts',
+          icon: <BuildOutlined />,
+        },
+      );
+    }
+    return base;
+  }, [hasAccess]);
   const router = useRouter();
   const activeKey = router.pathname.split('/')[2];
   // const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches; // unused
-
-  if (!hasAccess) {
-    return (
-      <div className='flex flex-col h-full w-full dark:bg-gradient-dark bg-gradient-light bg-cover bg-center'>
-        <ConfigProvider>
-          <Result
-            status='403'
-            title='403'
-            subTitle={'Only admins can access Construct'}
-            extra={
-              <Button type='primary' onClick={() => router.replace('/')}> 
-                {'Back Home'}
-              </Button>
-            }
-          />
-        </ConfigProvider>
-      </div>
-    );
-  }
+  // If user opens a restricted tab directly, redirect to the first allowed tab
+  useEffect(() => {
+    const keys = items.map(i => i.key);
+    if (!keys.includes(activeKey)) {
+      // default to database for non-admins
+      router.replace('/construct/' + keys[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeKey, items.length]);
 
   return (
     <div className='flex flex-col h-full w-full  dark:bg-gradient-dark bg-gradient-light bg-cover bg-center'>
@@ -169,3 +154,4 @@ function ConstructLayout({ children }: { children: React.ReactNode }) {
 }
 
 export default ConstructLayout;
+

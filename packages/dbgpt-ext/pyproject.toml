@@ -70,6 +70,10 @@ datasource_duckdb = [
     "duckdb",
     "duckdb-engine==0.9.1",
 ]
+# Trino SQLAlchemy dialect and DB-API
+datasource_trino = [
+    "sqlalchemy-trino",
+]
 # datasource_doris = ["pydoris>=1.0.2,<2.0.0"]
 storage_milvus = ["pymilvus"]
 storage_weaviate = ["weaviate-client"]

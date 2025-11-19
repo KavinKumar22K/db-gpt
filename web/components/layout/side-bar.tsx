@@ -3,8 +3,8 @@ import { DarkSvg, SunnySvg } from '@/components/icons';
 // import UserBar from '@/new-components/layout/UserBar';
 import { STORAGE_LANG_KEY, STORAGE_THEME_KEY, STORAGE_USERINFO_KEY } from '@/utils/constants/index';
 import Icon, { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
+import type { MenuProps } from 'antd';
 import { Popover, Tooltip } from 'antd';
-import { ItemType } from 'antd/es/menu/hooks/useItems';
 import cls from 'classnames';
 import moment from 'moment';
 
@@ -20,7 +20,7 @@ type SettingItem = {
   icon: ReactNode;
   noDropdownItem?: boolean;
   onClick?: () => void;
-  items?: ItemType[];
+  items?: MenuProps['items'];
   onSelect?: (p: { key: string }) => void;
   defaultSelectedKeys?: string[];
   placement?: 'top' | 'topLeft';
@@ -53,22 +53,24 @@ function SideBar() {
   const { t, i18n } = useTranslation();
 
   const hasAdmin = useMemo(() => {
-    const { user_id } = JSON.parse(localStorage.getItem(STORAGE_USERINFO_KEY) || '{}');
-    return adminList.some(admin => admin.user_id === user_id);
+    try {
+      const userInfo = JSON.parse(localStorage.getItem(STORAGE_USERINFO_KEY) || '{}');
+      const user_id = userInfo?.user_id;
+      if (!user_id) {
+        return false;
+      }
+      const isInAdminList = adminList.some(admin => admin.user_id === user_id);
+      const uiAdminStorage = localStorage.getItem('ui-admin-storage');
+      const isUIAdmin = uiAdminStorage ? JSON.parse(uiAdminStorage)?.state?.isUIAdmin === true : false;
+      return isInAdminList && isUIAdmin;
+    } catch (e) {
+      console.error('Error in hasAdmin check:', e);
+      return false;
+    }
   }, [adminList]);
 
   const hasConstructAccess = useMemo(() => {
-    try {
-      const { user_id } = JSON.parse(localStorage.getItem(STORAGE_USERINFO_KEY) || '{}');
-      if (!user_id) return false;
-      const envAllow = (process.env.NEXT_PUBLIC_CONSTRUCT_ALLOWED_USER_IDS || '')
-        .split(',')
-        .map(s => s.trim())
-        .filter(Boolean);
-      return hasAdmin || envAllow.includes(user_id);
-    } catch {
-      return hasAdmin;
-    }
+    return hasAdmin;
   }, [hasAdmin]);
 
   // TODO: unused function
@@ -252,27 +254,25 @@ function SideBar() {
         isActive: pathname.startsWith('/chat'),
       },
     ];
-    if (hasConstructAccess) {
-      items.push({
-        key: 'construct',
-        name: t('construct'),
-        isActive: pathname.startsWith('/construct'),
-        icon: (
-          <Image
-            key='image_construct'
-            src={
-              pathname.startsWith('/construct')
-                ? '/datainsights-service/pictures/app_active.png'
-                : '/datainsights-service/pictures/app.png'
-            }
-            alt='construct_image'
-            width={40}
-            height={40}
-          />
-        ),
-        path: '/construct/app',
-      });
-    }
+    items.push({
+      key: 'construct',
+      name: t('construct'),
+      isActive: pathname.startsWith('/construct'),
+      icon: (
+        <Image
+          key='image_construct'
+          src={
+            pathname.startsWith('/construct')
+              ? '/datainsights-service/pictures/app_active.png'
+              : '/datainsights-service/pictures/app.png'
+          }
+          alt='construct_image'
+          width={40}
+          height={40}
+        />
+      ),
+      path: hasAdmin ? '/construct/app' : '/construct/database',
+    });
     if (hasAdmin) {
       items.push({
         key: 'evaluation',
@@ -295,7 +295,7 @@ function SideBar() {
       });
     }
     return items;
-  }, [t, pathname, hasAdmin, hasConstructAccess]);
+  }, [t, pathname, hasAdmin]);
 
   // TODO: unused function
   // const dropDownRoutes: ItemType[] = useMemo(() => {
