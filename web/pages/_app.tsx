@@ -120,6 +120,7 @@ function LayoutWrapper({ children }: { children: React.ReactNode }) {
       user_id: values.user_id?.trim(),
       nick_name: values.nick_name?.trim() || values.user_id?.trim(),
       user_channel: 'local',
+      role: values.user_id?.trim()?.toLowerCase() === 'admin' ? 'admin' : 'user',
     };
     localStorage.setItem(STORAGE_USERINFO_KEY, JSON.stringify(user));
     localStorage.setItem(STORAGE_USERINFO_VALID_TIME_KEY, Date.now().toString());
