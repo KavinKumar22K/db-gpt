@@ -1,4 +1,6 @@
 import { apiInterceptors, getDbList, getDbSupportType, postDbDelete, postDbRefresh } from '@/client/api';
+import { ChatContext } from '@/app/chat-context';
+import { STORAGE_USERINFO_KEY } from '@/utils/constants/index';
 import GPTCard from '@/components/common/gpt-card';
 import MuiLoading from '@/components/common/loading';
 import FormDialog from '@/components/database/form-dialog';
@@ -8,7 +10,7 @@ import { dbMapper } from '@/utils';
 import { DeleteFilled, EditFilled, PlusOutlined, RedoOutlined } from '@ant-design/icons';
 import { useAsyncEffect } from 'ahooks';
 import { Badge, Button, Card, Drawer, Empty, Modal, Spin, message } from 'antd';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 
 type DBItem = DbListResponse[0];
@@ -21,6 +23,13 @@ function Database() {
   // const { setCurrentDialogInfo } = useContext(ChatContext);  // unused
   // const router = useRouter(); // unused
   const { t } = useTranslation();
+  const { adminList } = useContext(ChatContext);
+  // Resolve current user and admin flag
+  let userId = '';
+  try {
+    userId = JSON.parse(localStorage.getItem(STORAGE_USERINFO_KEY) || '{}')?.user_id || '';
+  } catch {}
+  const isAdmin = !!adminList?.some((a: any) => a.user_id === userId);
 
   const [dbList, setDbList] = useState<DbListResponse>([]);
   const [dbSupportList, setDbSupportList] = useState<DbSupportTypeResponse>([]);
@@ -269,6 +278,11 @@ function Database() {
                   <p>
                     {t('description')}: {item.description}
                   </p>
+                  {isAdmin && (
+                    <p>
+                      user_id: {item.params?.user_id || item.params?.owner || '-'}
+                    </p>
+                  )}
                 </Card>
               ))}
             </Spin>
