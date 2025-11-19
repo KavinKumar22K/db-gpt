@@ -1,4 +1,5 @@
 import { ChatContext } from '@/app/chat-context';
+import { STORAGE_USERINFO_KEY } from '@/utils/constants/index';
 import { apiInterceptors, delSpace, getSpaceConfig, getSpaceList, newDialogue } from '@/client/api';
 import DocPanel from '@/components/knowledge/doc-panel';
 import DocTypeForm from '@/components/knowledge/doc-type-form';
@@ -18,7 +19,7 @@ import { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const Knowledge = () => {
-  const { setCurrentDialogInfo } = useContext(ChatContext);
+  const { setCurrentDialogInfo, adminList } = useContext(ChatContext);
   const [spaceList, setSpaceList] = useState<Array<ISpace> | null>([]);
   const [isAddShow, setIsAddShow] = useState<boolean>(false);
   const [isPanelShow, setIsPanelShow] = useState<boolean>(false);
@@ -40,10 +41,17 @@ const Knowledge = () => {
     { title: t('Segmentation') },
   ];
   const router = useRouter();
+  // Resolve current user and admin flag
+  let userId = '';
+  try {
+    userId = JSON.parse(localStorage.getItem(STORAGE_USERINFO_KEY) || '{}')?.user_id || '';
+  } catch {}
+  const isAdmin = !!adminList?.some((a: any) => a.user_id === userId);
 
   async function getSpaces(params?: any) {
     setLoading(true);
-    const [_, data] = await apiInterceptors(getSpaceList({ ...params }));
+    const payload = { ...(params || {}), ...(isAdmin ? {} : { owner: userId }) };
+    const [_, data] = await apiInterceptors(getSpaceList(payload));
     setLoading(false);
     setSpaceList(data);
   }
@@ -57,7 +65,9 @@ const Knowledge = () => {
   useEffect(() => {
     getSpaces();
     getSpaceConfigs();
-  }, []);
+    // Re-fetch when adminList changes (role may change) or userId resolved
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adminList?.length, userId]);
 
   const handleChat = async (space: ISpace) => {
     const [_, data] = await apiInterceptors(

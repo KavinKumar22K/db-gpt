@@ -3,6 +3,7 @@ import { IStorage, StepChangeParams } from '@/types/knowledge';
 import { Button, Form, Input, Select, Spin } from 'antd';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { STORAGE_USERINFO_KEY } from '@/utils/constants/index';
 
 type FieldType = {
   spaceName: string;
@@ -35,10 +36,15 @@ export default function SpaceForm(props: IProps) {
   };
 
   const handleFinish = async (fieldsValue: FieldType) => {
-    const { spaceName, owner, description, storage, field } = fieldsValue;
+    const { spaceName, description, storage, field } = fieldsValue;
     setSpinning(true);
     const vector_type = storage;
     const domain_type = field;
+    // Determine owner from current user
+    let owner = '';
+    try {
+      owner = JSON.parse(localStorage.getItem(STORAGE_USERINFO_KEY) || '{}')?.user_id || '';
+    } catch {}
     const [_, data, res] = await apiInterceptors(
       addSpace({
         name: spaceName,
