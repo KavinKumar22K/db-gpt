@@ -4,6 +4,7 @@ import shutil
 from typing import List
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
+from dbgpt_serve.utils.auth import get_user_from_headers
 
 from dbgpt._private.config import Config
 from dbgpt.configs import TAG_KEY_KNOWLEDGE_FACTORY_DOMAIN_TYPE
