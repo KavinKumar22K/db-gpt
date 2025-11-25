@@ -1074,7 +1074,7 @@ class GptsAppDao(BaseDao):
         )
         chat_knowledge_ctx = NativeTeamContext(
             chat_scene="chat_knowledge",
-            scene_name="Chat Knowledge",
+            scene_name="Chat Document",
             scene_describe="Private knowledge base Q&A",
             param_title="",
             show_disable=False,

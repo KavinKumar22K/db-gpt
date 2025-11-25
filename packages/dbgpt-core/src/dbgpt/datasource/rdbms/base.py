@@ -60,12 +60,10 @@ class RDBMSDatasourceParameters(BaseDatasourceParameters):
     database: str = field(metadata={"help": _("Database name")})
     driver: str = field(metadata={"help": _("Database driver, e.g., mysql+pymysql")})
     password: str = field(
-        default="${env:DBGPT_DB_PASSWORD}",
+        default="database password",
         metadata={
             "help": _(
                 "Database password, you can write your password directly, of course, "
-                "you can also use environment variables, such as "
-                "${env:DBGPT_DB_PASSWORD}"
             ),
             "tags": "privacy",
         },

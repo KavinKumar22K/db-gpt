@@ -89,7 +89,7 @@ class ChatScene(Enum):
     )
     ChatKnowledge = Scene(
         "chat_knowledge",
-        "Chat Knowledge",
+        "Chat Document",
         "Dialogue through natural language and private documents and knowledge bases.",
         ["Knowledge Space Select"],
     )

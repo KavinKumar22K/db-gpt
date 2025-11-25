@@ -1,7 +1,7 @@
 import logging
 import os
 import shutil
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from dbgpt_serve.utils.auth import get_user_from_headers
@@ -95,14 +95,17 @@ async def space_add(request: KnowledgeSpaceRequest):
 
 @router.post("/knowledge/space/list")
 async def space_list(
-    request: KnowledgeSpaceRequest,
+    request: Optional[KnowledgeSpaceRequest] = None,
     user_token=Depends(get_user_from_headers),
 ):
+    request = request or KnowledgeSpaceRequest()
     logger.info(f"/space/list params: {request}")
     try:
         # Enforce role-based visibility: non-admins only see their own spaces unless owner explicitly provided
         if request.owner is None and getattr(user_token, "role", "normal") != "admin":
-            request.owner = getattr(user_token, "user_id", None)
+            _uid = getattr(user_token, "user_id", None)
+            if _uid:
+                request.owner = _uid
         res = await blocking_func_to_async(
             get_executor(), knowledge_space_service.get_knowledge_space, request
         )

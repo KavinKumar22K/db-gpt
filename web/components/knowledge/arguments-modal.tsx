@@ -64,7 +64,7 @@ export default function ArgumentsModal({ space, argumentsShow, setArgumentsShow 
             <Input className='mb-5  h-12' placeholder='Please enter' />
           </Form.Item>
         </Col>
-        <Col span={12}>
+        {/* <Col span={12}>
           <Form.Item<IArguments>
             tooltip={t(`recall_type`)}
             rules={[{ required: true }]}
@@ -83,7 +83,7 @@ export default function ArgumentsModal({ space, argumentsShow, setArgumentsShow 
           >
             <Input className='mb-5  h-12' />
           </Form.Item>
-        </Col>
+        </Col> */}
         <Col span={12}>
           <Form.Item<IArguments>
             tooltip={t(`The_size_of_the_data_chunks`)}

@@ -11,30 +11,30 @@ export default function DocTypeForm(props: IProps) {
   const { t } = useTranslation();
   const { handleStepChange } = props;
   const docTypeList = [
-    {
-      type: 'TEXT',
-      title: t('Text'),
-      subTitle: t('Fill your raw text'),
-      iconType: 'TEXT',
-    },
-    {
-      type: 'URL',
-      title: t('URL'),
-      subTitle: t('Fetch_the_content_of_a_URL'),
-      iconType: 'WEBPAGE',
-    },
+    // {
+    //   type: 'TEXT',
+    //   title: t('Text'),
+    //   subTitle: t('Fill your raw text'),
+    //   iconType: 'TEXT',
+    // },
+    // {
+    //   type: 'URL',
+    //   title: t('URL'),
+    //   subTitle: t('Fetch_the_content_of_a_URL'),
+    //   iconType: 'WEBPAGE',
+    // },
     {
       type: 'DOCUMENT',
       title: t('Document'),
       subTitle: t('Upload_a_document'),
       iconType: 'DOCUMENT',
     },
-    {
-      type: 'YUQUEURL',
-      title: t('yuque'),
-      subTitle: t('Get_yuque_document'),
-      iconType: 'YUQUEURL',
-    },
+    // {
+    //   type: 'YUQUEURL',
+    //   title: t('yuque'),
+    //   subTitle: t('Get_yuque_document'),
+    //   iconType: 'YUQUEURL',
+    // },
   ];
 
   return (

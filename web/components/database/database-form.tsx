@@ -141,8 +141,8 @@ function DatabaseForm({
         type: selectedType,
       }}
     >
-      <FormItem label='User ID' name='user_id' rules={[{ required: true, message: 'Please input user id' }]}>
-        <Input placeholder='Enter user id (required)' />
+      <FormItem label='User ID' name='user_id' rules={[{ required: true, message: 'Please input user id' }]}> 
+        <Input placeholder='Enter user id (required)' readOnly />
       </FormItem>
 
       <FormItem

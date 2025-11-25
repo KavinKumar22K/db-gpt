@@ -101,7 +101,7 @@ export default function SpaceForm(props: IProps) {
           rules={[{ required: true, message: t('Please_select_the_storage') }]}
         >
           <Select className='mb-5 h-12' placeholder={t('Please_select_the_storage')} onChange={handleStorageChange}>
-            {spaceConfig?.map((item: any) => {
+            {[{"name":"VectorStore","desc":"VectorStore"}]?.map((item: any) => {
               return (
                 <Select.Option key={item.name} value={item.name}>
                   {item.desc}
